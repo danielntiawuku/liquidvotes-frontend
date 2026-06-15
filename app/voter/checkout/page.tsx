@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,7 +25,7 @@ interface Nominee {
   }
 }
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const code = searchParams.get('code')
@@ -79,7 +79,6 @@ export default function CheckoutPage() {
         email: email.trim(),
       })
 
-      // Redirect to Paystack checkout
       window.location.href = response.data.authorizationUrl
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Payment failed. Please try again.')
@@ -100,8 +99,6 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-lg mx-auto space-y-6 py-8">
-
-      {/* Nominee info */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">{nominee.name}</CardTitle>
@@ -119,7 +116,6 @@ export default function CheckoutPage() {
         </CardContent>
       </Card>
 
-      {/* Vote quantity */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Select Votes</CardTitle>
@@ -150,7 +146,6 @@ export default function CheckoutPage() {
             </Button>
           </div>
 
-          {/* Quick select */}
           <div className="flex gap-2 flex-wrap mb-6">
             {[10, 50, 100, 500].map((q) => (
               <Button
@@ -164,7 +159,6 @@ export default function CheckoutPage() {
             ))}
           </div>
 
-          {/* Total */}
           <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
             <p className="text-sm font-medium text-foreground">Total Amount</p>
             <p className="text-2xl font-bold text-primary">
@@ -174,7 +168,6 @@ export default function CheckoutPage() {
         </CardContent>
       </Card>
 
-      {/* Email for receipt */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Receipt</CardTitle>
@@ -195,14 +188,12 @@ export default function CheckoutPage() {
         </CardContent>
       </Card>
 
-      {/* Error */}
       {error && (
         <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
 
-      {/* Pay button */}
       <Button
         onClick={handlePay}
         disabled={paying}
@@ -225,5 +216,17 @@ export default function CheckoutPage() {
         Secured by Paystack · Your vote is anonymous
       </p>
     </div>
+  )
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <CheckoutContent />
+    </Suspense>
   )
 }

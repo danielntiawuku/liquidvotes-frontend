@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -43,7 +43,7 @@ interface OrganizerEvent {
   name: string
 }
 
-export default function OrganizerAnalyticsPage() {
+function OrganizerAnalyticsContent() {
   const searchParams = useSearchParams()
   const eventIdParam = searchParams.get('eventId')
 
@@ -54,7 +54,6 @@ export default function OrganizerAnalyticsPage() {
   const [eventsLoading, setEventsLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // Load organizer events for the selector
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -73,7 +72,6 @@ export default function OrganizerAnalyticsPage() {
     fetchEvents()
   }, [])
 
-  // Load analytics when event is selected
   useEffect(() => {
     if (!selectedEventId) return
 
@@ -116,7 +114,6 @@ export default function OrganizerAnalyticsPage() {
           <p className="text-muted-foreground mt-1">Track voting progress and revenue</p>
         </div>
 
-        {/* Event selector */}
         {events.length > 1 && (
           <select
             value={selectedEventId}
@@ -130,7 +127,6 @@ export default function OrganizerAnalyticsPage() {
         )}
       </div>
 
-      {/* No events */}
       {events.length === 0 && (
         <div className="text-center py-20">
           <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -141,31 +137,26 @@ export default function OrganizerAnalyticsPage() {
         </div>
       )}
 
-      {/* Loading analytics */}
       {loading && (
         <div className="flex items-center justify-center min-h-[40vh]">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       )}
 
-      {/* Error */}
       {error && !loading && (
         <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-3 text-sm text-destructive mb-6">
           {error}
         </div>
       )}
 
-      {/* Analytics content */}
       {analytics && !loading && (
         <div className="space-y-6">
 
-          {/* Event info */}
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-semibold text-foreground">{analytics.event.name}</h2>
             <Badge className="capitalize">{analytics.event.status}</Badge>
           </div>
 
-          {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <Card>
               <CardContent className="pt-6">
@@ -210,7 +201,6 @@ export default function OrganizerAnalyticsPage() {
             </Card>
           </div>
 
-          {/* Revenue by day */}
           {Object.keys(analytics.revenueByDay).length > 0 && (
             <Card>
               <CardHeader>
@@ -245,7 +235,6 @@ export default function OrganizerAnalyticsPage() {
             </Card>
           )}
 
-          {/* Leaderboard per category */}
           {analytics.leaderboard.map((category) => (
             <Card key={category.categoryId}>
               <CardHeader>
@@ -303,9 +292,20 @@ export default function OrganizerAnalyticsPage() {
               </CardContent>
             </Card>
           ))}
-
         </div>
       )}
     </div>
+  )
+}
+
+export default function OrganizerAnalyticsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <OrganizerAnalyticsContent />
+    </Suspense>
   )
 }

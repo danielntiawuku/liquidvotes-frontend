@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -32,7 +32,7 @@ interface Receipt {
   } | null
 }
 
-export default function ConfirmationPage() {
+function ConfirmationContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const reference = searchParams.get('reference')
@@ -49,12 +49,10 @@ export default function ConfirmationPage() {
 
     const verifyPayment = async () => {
       try {
-        // Verify the payment first
         const verifyResponse = await paymentsApi.verify(reference)
         setStatus(verifyResponse.data.status)
 
         if (verifyResponse.data.status === 'success') {
-          // Fetch full receipt
           const receiptResponse = await paymentsApi.getReceipt(reference)
           setReceipt(receiptResponse.data.payment)
         }
@@ -100,8 +98,6 @@ export default function ConfirmationPage() {
 
   return (
     <div className="max-w-lg mx-auto py-8 space-y-6">
-
-      {/* Success header */}
       <div className="text-center space-y-3">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/20 mb-2">
           <Check className="w-8 h-8 text-green-600" />
@@ -112,7 +108,6 @@ export default function ConfirmationPage() {
         </p>
       </div>
 
-      {/* Receipt card */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Receipt</CardTitle>
@@ -168,7 +163,6 @@ export default function ConfirmationPage() {
               </p>
             </div>
           </div>
-
           <div className="border-t border-border pt-4">
             <p className="text-xs text-muted-foreground">Reference</p>
             <code className="text-xs text-muted-foreground">{receipt.reference}</code>
@@ -176,24 +170,12 @@ export default function ConfirmationPage() {
         </CardContent>
       </Card>
 
-      {/* Actions */}
       <div className="space-y-3">
-        <Button
-          asChild
-          className="w-full"
-        >
-          <Link href="/voter/assistant">
-            Vote for Another Nominee
-          </Link>
+        <Button asChild className="w-full">
+          <Link href="/voter/assistant">Vote for Another Nominee</Link>
         </Button>
-        <Button
-          variant="outline"
-          className="w-full"
-          asChild
-        >
-          <Link href="/">
-            Back to Home
-          </Link>
+        <Button variant="outline" className="w-full" asChild>
+          <Link href="/">Back to Home</Link>
         </Button>
       </div>
 
@@ -201,5 +183,17 @@ export default function ConfirmationPage() {
         A receipt has been sent to {receipt.voterEmail}
       </p>
     </div>
+  )
+}
+
+export default function ConfirmationPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <ConfirmationContent />
+    </Suspense>
   )
 }

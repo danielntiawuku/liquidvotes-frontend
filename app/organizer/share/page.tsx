@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,7 +22,7 @@ interface Event {
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-export default function ShareEventPage() {
+function ShareEventContent() {
   const searchParams = useSearchParams()
   const eventIdParam = searchParams.get('eventId')
 
@@ -35,7 +35,6 @@ export default function ShareEventPage() {
   const [copiedUrl, setCopiedUrl] = useState(false)
   const [search, setSearch] = useState('')
 
-  // Load events
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -55,7 +54,6 @@ export default function ShareEventPage() {
     fetchEvents()
   }, [])
 
-  // Load nominees when event changes
   useEffect(() => {
     if (!selectedEventId) return
 
@@ -114,7 +112,6 @@ export default function ShareEventPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
 
-      {/* Header */}
       <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Share Event</h1>
@@ -122,8 +119,6 @@ export default function ShareEventPage() {
             Share your event link and nominee codes with voters
           </p>
         </div>
-
-        {/* Event selector */}
         {events.length > 1 && (
           <select
             value={selectedEventId}
@@ -137,21 +132,18 @@ export default function ShareEventPage() {
         )}
       </div>
 
-      {/* Error */}
       {error && (
         <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-3 text-sm text-destructive mb-6">
           {error}
         </div>
       )}
 
-      {/* Event name */}
       {selectedEvent && (
         <p className="text-sm font-medium text-muted-foreground mb-6">
           Sharing: <span className="text-foreground">{selectedEvent.name}</span>
         </p>
       )}
 
-      {/* Event URL */}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -164,26 +156,12 @@ export default function ShareEventPage() {
         </CardHeader>
         <CardContent>
           <div className="flex gap-2">
-            <Input
-              value={eventUrl}
-              readOnly
-              className="flex-1 bg-muted text-sm"
-            />
-            <Button
-              onClick={copyEventUrl}
-              variant="outline"
-              className="gap-2 flex-shrink-0"
-            >
+            <Input value={eventUrl} readOnly className="flex-1 bg-muted text-sm" />
+            <Button onClick={copyEventUrl} variant="outline" className="gap-2 flex-shrink-0">
               {copiedUrl ? (
-                <>
-                  <Check className="w-4 h-4 text-green-600" />
-                  Copied!
-                </>
+                <><Check className="w-4 h-4 text-green-600" />Copied!</>
               ) : (
-                <>
-                  <Copy className="w-4 h-4" />
-                  Copy
-                </>
+                <><Copy className="w-4 h-4" />Copy</>
               )}
             </Button>
           </div>
@@ -192,13 +170,7 @@ export default function ShareEventPage() {
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={() => {
-                const text = `Vote now at ${eventUrl}`
-                window.open(
-                  `https://wa.me/?text=${encodeURIComponent(text)}`,
-                  '_blank'
-                )
-              }}
+              onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Vote now at ${eventUrl}`)}`, '_blank')}
             >
               <Share2 className="w-3.5 h-3.5" />
               Share on WhatsApp
@@ -207,13 +179,7 @@ export default function ShareEventPage() {
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={() => {
-                const text = `Vote now at ${eventUrl}`
-                window.open(
-                  `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
-                  '_blank'
-                )
-              }}
+              onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Vote now at ${eventUrl}`)}`, '_blank')}
             >
               <Share2 className="w-3.5 h-3.5" />
               Share on X
@@ -222,7 +188,6 @@ export default function ShareEventPage() {
         </CardContent>
       </Card>
 
-      {/* Nominee Codes */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -261,7 +226,6 @@ export default function ShareEventPage() {
                       <p className="text-xs text-muted-foreground">{nominee.categoryName}</p>
                     </div>
                   </div>
-
                   <div className="flex items-center gap-3 flex-wrap">
                     <code className="bg-primary/10 text-primary font-bold px-3 py-1.5 rounded-lg text-sm tracking-wider">
                       {nominee.code}
@@ -273,44 +237,26 @@ export default function ShareEventPage() {
                       onClick={() => copyToClipboard(nominee.code, nominee.id)}
                     >
                       {copiedId === nominee.id ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-green-600" />
-                          Copied
-                        </>
+                        <><Check className="w-3.5 h-3.5 text-green-600" />Copied</>
                       ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5" />
-                          Copy
-                        </>
+                        <><Copy className="w-3.5 h-3.5" />Copy</>
                       )}
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       className="gap-1.5"
-                      onClick={() =>
-                        copyToClipboard(
-                          `Vote for ${nominee.name} using code ${nominee.code} at ${eventUrl}`,
-                          `msg-${nominee.id}`
-                        )
-                      }
+                      onClick={() => copyToClipboard(`Vote for ${nominee.name} using code ${nominee.code} at ${eventUrl}`, `msg-${nominee.id}`)}
                     >
                       {copiedId === `msg-${nominee.id}` ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-green-600" />
-                          Copied
-                        </>
+                        <><Check className="w-3.5 h-3.5 text-green-600" />Copied</>
                       ) : (
-                        <>
-                          <Share2 className="w-3.5 h-3.5" />
-                          Share
-                        </>
+                        <><Share2 className="w-3.5 h-3.5" />Share</>
                       )}
                     </Button>
                   </div>
                 </div>
               ))}
-
               {filtered.length === 0 && nominees.length > 0 && (
                 <div className="text-center py-8 text-muted-foreground text-sm">
                   No nominees match your search.
@@ -319,29 +265,20 @@ export default function ShareEventPage() {
             </div>
           )}
 
-          {/* Copy All */}
           {nominees.length > 0 && (
             <div className="mt-6 pt-4 border-t border-border">
               <Button
                 variant="outline"
                 className="w-full gap-2"
                 onClick={() => {
-                  const allCodes = nominees
-                    .map((n) => `${n.name} (${n.categoryName}): ${n.code}`)
-                    .join('\n')
+                  const allCodes = nominees.map((n) => `${n.name} (${n.categoryName}): ${n.code}`).join('\n')
                   copyToClipboard(allCodes, 'all')
                 }}
               >
                 {copiedId === 'all' ? (
-                  <>
-                    <Check className="w-4 h-4 text-green-600" />
-                    All Codes Copied!
-                  </>
+                  <><Check className="w-4 h-4 text-green-600" />All Codes Copied!</>
                 ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    Copy All Codes
-                  </>
+                  <><Copy className="w-4 h-4" />Copy All Codes</>
                 )}
               </Button>
             </div>
@@ -349,5 +286,17 @@ export default function ShareEventPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function ShareEventPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <ShareEventContent />
+    </Suspense>
   )
 }
