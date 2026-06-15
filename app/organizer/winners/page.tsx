@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -46,7 +46,7 @@ const statusConfig = {
   },
 }
 
-export default function WinnersPage() {
+function WinnersContent() {
   const [events, setEvents] = useState<Event[]>([])
   const [selectedEventId, setSelectedEventId] = useState<string>('')
   const [categories, setCategories] = useState<Category[]>([])
@@ -57,7 +57,6 @@ export default function WinnersPage() {
   const [closing, setClosing] = useState<string | null>(null)
   const [error, setError] = useState('')
 
-  // Load organizer events
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -77,21 +76,20 @@ export default function WinnersPage() {
     fetchEvents()
   }, [])
 
-  // Load analytics (leaderboard) when event changes
   useEffect(() => {
     if (!selectedEventId) return
 
-    const fetchAnalytics = async () => {
+    const fetchData = async () => {
       setLoadingCategories(true)
       try {
-        const response = await organizerApi.getAnalytics(selectedEventId)
-        const leaderboard = response.data.analytics.leaderboard
+        const [analyticsRes, eventRes] = await Promise.all([
+          organizerApi.getAnalytics(selectedEventId),
+          eventsApi.getById(selectedEventId),
+        ])
 
-        // Also fetch full event to get category statuses
-        const eventResponse = await eventsApi.getById(selectedEventId)
-        const eventCategories = eventResponse.data.event.categories
+        const leaderboard = analyticsRes.data.analytics.leaderboard
+        const eventCategories = eventRes.data.event.categories
 
-        // Merge leaderboard votes with category statuses
         const merged: Category[] = eventCategories.map((cat: any) => {
           const lb = leaderboard.find((l: any) => l.categoryId === cat.id)
           return {
@@ -124,7 +122,7 @@ export default function WinnersPage() {
       }
     }
 
-    fetchAnalytics()
+    fetchData()
   }, [selectedEventId])
 
   const selectWinner = (categoryId: string, nomineeId: string) => {
@@ -156,9 +154,7 @@ export default function WinnersPage() {
       })
       setCategories((prev) =>
         prev.map((cat) =>
-          cat.id === categoryId
-            ? { ...cat, status: 'winner_published' }
-            : cat
+          cat.id === categoryId ? { ...cat, status: 'winner_published' } : cat
         )
       )
       setConfirming(null)
@@ -172,7 +168,6 @@ export default function WinnersPage() {
   const handleCloseVoting = async (categoryId: string) => {
     setClosing(categoryId)
     try {
-      // Close the entire event voting (closes all categories)
       await eventsApi.close(selectedEventId)
       setCategories((prev) =>
         prev.map((cat) =>
@@ -243,15 +238,13 @@ export default function WinnersPage() {
         </div>
       )}
 
-      {/* Summary */}
+      {/* Summary + Categories */}
       {!loadingCategories && categories.length > 0 && (
         <>
           <div className="grid grid-cols-3 gap-4 mb-8">
             <Card>
               <CardContent className="pt-6">
-                <div className="text-2xl font-bold text-foreground">
-                  {categories.length}
-                </div>
+                <div className="text-2xl font-bold text-foreground">{categories.length}</div>
                 <p className="text-sm text-muted-foreground mt-1">Total Categories</p>
               </CardContent>
             </Card>
@@ -273,7 +266,6 @@ export default function WinnersPage() {
             </Card>
           </div>
 
-          {/* Categories */}
           <div className="space-y-6">
             {categories.map((category) => {
               const sorted = [...category.nominees].sort((a, b) => b.votes - a.votes)
@@ -315,8 +307,6 @@ export default function WinnersPage() {
                     </div>
                   </CardHeader>
                   <CardContent>
-
-                    {/* Nominees ranked by votes */}
                     <div className="space-y-2 mb-4">
                       {sorted.map((nominee, index) => {
                         const topVotes = sorted[0]?.votes ?? 0
@@ -336,16 +326,11 @@ export default function WinnersPage() {
                             }`}>
                               {index + 1}
                             </div>
-
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between mb-1">
                                 <div className="flex items-center gap-2">
-                                  <p className="text-sm font-medium text-foreground">
-                                    {nominee.name}
-                                  </p>
-                                  <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
-                                    {nominee.code}
-                                  </code>
+                                  <p className="text-sm font-medium text-foreground">{nominee.name}</p>
+                                  <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{nominee.code}</code>
                                 </div>
                                 <span className="text-sm font-bold text-foreground ml-2">
                                   {nominee.votes.toLocaleString()} votes
@@ -358,7 +343,6 @@ export default function WinnersPage() {
                                 />
                               </div>
                             </div>
-
                             {nominee.isWinner ? (
                               <Badge className="gap-1 bg-yellow-400 text-yellow-900 flex-shrink-0">
                                 <Trophy className="w-3 h-3" />
@@ -379,36 +363,25 @@ export default function WinnersPage() {
                       })}
                     </div>
 
-                    {/* Publish button */}
                     {category.status === 'closed' && selectedWinner && (
                       confirming === category.id ? (
                         <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-300 rounded-lg">
                           <p className="text-sm flex-1 text-foreground">
-                            Publish <strong>{selectedWinner.name}</strong> as winner of{' '}
-                            {category.name}? This cannot be undone.
+                            Publish <strong>{selectedWinner.name}</strong> as winner of {category.name}? This cannot be undone.
                           </p>
                           <Button
                             size="sm"
                             onClick={() => handlePublishWinner(category.id)}
                             disabled={publishing === category.id}
                           >
-                            {publishing === category.id ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : 'Confirm'}
+                            {publishing === category.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Confirm'}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setConfirming(null)}
-                          >
+                          <Button size="sm" variant="outline" onClick={() => setConfirming(null)}>
                             Cancel
                           </Button>
                         </div>
                       ) : (
-                        <Button
-                          className="w-full gap-2"
-                          onClick={() => setConfirming(category.id)}
-                        >
+                        <Button className="w-full gap-2" onClick={() => setConfirming(category.id)}>
                           <Trophy className="w-4 h-4" />
                           Publish Winner
                         </Button>
@@ -431,7 +404,6 @@ export default function WinnersPage() {
         </>
       )}
 
-      {/* No categories */}
       {!loadingCategories && categories.length === 0 && events.length > 0 && (
         <div className="text-center py-12 text-muted-foreground">
           <p>No categories found for this event.</p>
@@ -441,5 +413,17 @@ export default function WinnersPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function WinnersPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <WinnersContent />
+    </Suspense>
   )
 }
