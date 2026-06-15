@@ -1,0 +1,232 @@
+import axios from 'axios'
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+
+export const api = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// Automatically attach auth token to every request
+api.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+  }
+  return config
+})
+
+// Handle global response errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status
+
+    if (status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        window.location.href = '/login'
+      }
+    }
+
+    if (status === 403) {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/'
+      }
+    }
+
+    return Promise.reject(error)
+  }
+)
+
+// ============================================
+// AUTH
+// ============================================
+export const authApi = {
+  login: (email: string, password: string) =>
+    api.post('/auth/login', { email, password }),
+
+  signup: (data: {
+    name: string
+    email: string
+    password: string
+    role: 'voter' | 'organizer'
+  }) => api.post('/auth/signup', data),
+
+  logout: () =>
+    api.post('/auth/logout'),
+
+  me: () =>
+    api.get('/auth/me'),
+}
+
+// ============================================
+// EVENTS
+// ============================================
+export const eventsApi = {
+  getAll: () =>
+    api.get('/events/public'),
+
+  getById: (id: string) =>
+    api.get(`/events/${id}`),
+
+  create: (data: object) =>
+    api.post('/events', data),
+
+  update: (id: string, data: object) =>
+    api.put(`/events/${id}`, data),
+
+  delete: (id: string) =>
+    api.delete(`/events/${id}`),
+
+  publish: (id: string) =>
+    api.post(`/events/${id}/publish`),
+
+  close: (id: string) =>
+    api.post(`/events/${id}/close`),
+
+  getMine: () =>
+    api.get('/events/mine'),
+}
+
+// ============================================
+// CATEGORIES
+// ============================================
+export const categoriesApi = {
+  getByEvent: (eventId: string) =>
+    api.get(`/events/${eventId}/categories`),
+
+  create: (eventId: string, data: object) =>
+    api.post(`/events/${eventId}/categories`, data),
+
+  update: (eventId: string, categoryId: string, data: object) =>
+    api.put(`/events/${eventId}/categories/${categoryId}`, data),
+
+  delete: (eventId: string, categoryId: string) =>
+    api.delete(`/events/${eventId}/categories/${categoryId}`),
+}
+
+// ============================================
+// NOMINEES
+// ============================================
+export const nomineesApi = {
+  getByCategory: (eventId: string, categoryId: string) =>
+    api.get(`/events/${eventId}/categories/${categoryId}/nominees`),
+
+  getByCode: (code: string) =>
+    api.get(`/nominees/code/${code}`),
+
+  getById: (id: string) =>
+    api.get(`/nominees/${id}`),
+
+  create: (eventId: string, categoryId: string, data: object) =>
+    api.post(`/events/${eventId}/categories/${categoryId}/nominees`, data),
+
+  update: (id: string, data: object) =>
+    api.put(`/nominees/${id}`, data),
+
+  delete: (id: string) =>
+    api.delete(`/nominees/${id}`),
+}
+
+// ============================================
+// PAYMENTS
+// ============================================
+export const paymentsApi = {
+  initiate: (data: {
+    nomineeId: string
+    quantity: number
+    method: string
+    email: string
+    phone?: string
+  }) => api.post('/payments/initiate', data),
+
+  verify: (reference: string) =>
+    api.get(`/payments/verify/${reference}`),
+
+  getReceipt: (reference: string) =>
+    api.get(`/payments/receipt/${reference}`),
+
+  getMyTransactions: () =>
+    api.get('/payments/me'),
+}
+
+// ============================================
+// VOTES
+// ============================================
+export const votesApi = {
+  getByEvent: (eventId: string) =>
+    api.get(`/votes/event/${eventId}`),
+}
+
+// ============================================
+// ORGANIZER
+// ============================================
+export const organizerApi = {
+  getDashboard: () =>
+    api.get('/organizer/dashboard'),
+
+  getAnalytics: (eventId: string) =>
+    api.get(`/organizer/events/${eventId}/analytics`),
+
+  getVoteRecords: (eventId: string) =>
+    api.get(`/organizer/events/${eventId}/votes`),
+
+  getPaymentRecords: (eventId: string) =>
+    api.get(`/organizer/events/${eventId}/payments`),
+
+  publishWinners: (eventId: string, data: object) =>
+    api.post(`/organizer/events/${eventId}/winners`, data),
+
+  updateProfile: (data: object) =>
+    api.put('/organizer/profile', data),
+}
+
+// ============================================
+// ADMIN
+// ============================================
+export const adminApi = {
+  getDashboard: () =>
+    api.get('/admin/dashboard'),
+
+  getOrganizations: () =>
+    api.get('/admin/organizations'),
+
+  getUsers: () =>
+    api.get('/admin/users'),
+
+  deleteUser: (id: string) =>
+    api.delete(`/admin/users/${id}`),
+
+  getAllEvents: () =>
+    api.get('/admin/events'),
+
+  getAllNominees: () =>
+    api.get('/admin/nominees'),
+
+  moderateNominee: (id: string, data: { status: 'approved' | 'rejected' }) =>
+    api.put(`/admin/nominees/${id}/moderate`, data),
+
+  getPayments: () =>
+    api.get('/admin/payments'),
+
+  getSubscriptions: () =>
+    api.get('/admin/subscriptions'),
+
+  getReports: () =>
+    api.get('/admin/reports'),
+
+  getSupportTickets: () =>
+    api.get('/admin/support'),
+
+  updateTicket: (id: string, data: { status: 'open' | 'in_progress' | 'resolved' }) =>
+    api.put(`/admin/support/${id}`, data),
+
+  getAuditLogs: () =>
+    api.get('/admin/audit-logs'),
+}
