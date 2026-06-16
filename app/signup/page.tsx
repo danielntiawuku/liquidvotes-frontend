@@ -64,6 +64,9 @@ export default function SignupPage() {
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
 
+      // Notify other components (like Navigation) that auth state changed
+      window.dispatchEvent(new Event('auth-change'))
+
       // Redirect based on role
       if (user.role === 'organizer') router.push('/organizer/dashboard')
       else router.push('/voter/assistant')
@@ -166,7 +169,7 @@ export default function SignupPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Create an Account</CardTitle>
-          <CardDescription>Join the Awards Voting Platform</CardDescription>
+          <CardDescription>Join LiquidVotes</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs value={userType} onValueChange={handleTabChange}>

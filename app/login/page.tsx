@@ -36,6 +36,9 @@ export default function LoginPage() {
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
 
+      // Notify other components (like Navigation) that auth state changed
+      window.dispatchEvent(new Event('auth-change'))
+
       // Redirect based on role
       if (user.role === 'admin') router.push('/admin/dashboard')
       else if (user.role === 'organizer') router.push('/organizer/dashboard')

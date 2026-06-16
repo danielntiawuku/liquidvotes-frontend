@@ -20,13 +20,27 @@ export function Navigation() {
   const router = useRouter()
 
   useEffect(() => {
-    const stored = localStorage.getItem('user')
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored))
-      } catch {
+    const loadUser = () => {
+      const stored = localStorage.getItem('user')
+      if (stored) {
+        try {
+          setUser(JSON.parse(stored))
+        } catch {
+          setUser(null)
+        }
+      } else {
         setUser(null)
       }
+    }
+
+    loadUser()
+
+    window.addEventListener('auth-change', loadUser)
+    window.addEventListener('storage', loadUser)
+
+    return () => {
+      window.removeEventListener('auth-change', loadUser)
+      window.removeEventListener('storage', loadUser)
     }
   }, [])
 
@@ -35,6 +49,7 @@ export function Navigation() {
     localStorage.removeItem('user')
     setUser(null)
     setDropdownOpen(false)
+    window.dispatchEvent(new Event('auth-change'))
     router.push('/')
   }
 
