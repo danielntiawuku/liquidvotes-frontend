@@ -122,8 +122,9 @@ export default function AwardsPage() {
           {!loading && filtered.length > 0 && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((event) => (
-                <div
+                <Link
                   key={event.id}
+                  href={`/awards/${event.id}`}
                   className="flex flex-col p-6 border border-border rounded-xl hover:border-primary hover:shadow-sm transition bg-card"
                 >
                   {/* Top */}
@@ -180,15 +181,13 @@ export default function AwardsPage() {
                       <span className="text-xs font-medium text-foreground">
                         {event.currency} {Number(event.votePrice).toFixed(2)}/vote
                       </span>
-                      <Link href="/voter/assistant">
-                        <Button size="sm" className="gap-1 h-7 text-xs">
-                          Vote
-                          <ArrowRight className="w-3 h-3" />
-                        </Button>
-                      </Link>
+                      <Button size="sm" className="gap-1 h-7 text-xs" tabIndex={-1}>
+                        View
+                        <ArrowRight className="w-3 h-3" />
+                      </Button>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
