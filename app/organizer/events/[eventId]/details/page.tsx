@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { ImageUpload } from '@/components/shared/ImageUpload'
 import { eventsApi, categoriesApi, nomineesApi } from '@/lib/api'
 import {
   ArrowLeft,
@@ -16,12 +17,15 @@ import {
   CheckCircle,
 } from 'lucide-react'
 
+type NomineeFormState = Record<string, { name: string; bio: string; photoUrl: string | null }>
+
 interface Nominee {
   id: string
   name: string
   code: string
   status: string
   bio: string | null
+  photoUrl: string | null
 }
 
 interface Category {
@@ -41,6 +45,7 @@ interface Event {
   votePrice: string
   currency: string
   codePrefix: string
+  bannerUrl: string | null
   categories: Category[]
 }
 
@@ -63,6 +68,7 @@ export default function EventDetailsPage({
     votePrice: '',
     startDate: '',
     endDate: '',
+    bannerUrl: null as string | null,
   })
 
   // Add category
@@ -70,7 +76,7 @@ export default function EventDetailsPage({
   const [addingCategory, setAddingCategory] = useState(false)
 
   // Add nominee
-  const [newNominee, setNewNominee] = useState<Record<string, { name: string; bio: string }>>({})
+  const [newNominee, setNewNominee] = useState<NomineeFormState>({})
   const [addingNominee, setAddingNominee] = useState<string | null>(null)
 
   useEffect(() => {
@@ -85,6 +91,7 @@ export default function EventDetailsPage({
           votePrice: e.votePrice,
           startDate: e.startDate.split('T')[0],
           endDate: e.endDate.split('T')[0],
+          bannerUrl: e.bannerUrl ?? null,
         })
       } catch {
         setError('Failed to load event.')
@@ -105,7 +112,11 @@ export default function EventDetailsPage({
         votePrice: Number(form.votePrice),
         startDate: form.startDate,
         endDate: form.endDate,
+        bannerUrl: form.bannerUrl ?? undefined,
       })
+      setEvent((prev: Event | null) =>
+        prev ? { ...prev, bannerUrl: form.bannerUrl } : prev
+      )
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (err: any) {
@@ -120,7 +131,7 @@ export default function EventDetailsPage({
     setAddingCategory(true)
     try {
       const response = await categoriesApi.create(eventId, { name: newCategory.trim() })
-      setEvent((prev) =>
+      setEvent((prev: Event | null) =>
         prev
           ? { ...prev, categories: [...prev.categories, { ...response.data.category, nominees: [] }] }
           : prev
@@ -137,7 +148,7 @@ export default function EventDetailsPage({
     if (!confirm('Delete this category and all its nominees?')) return
     try {
       await categoriesApi.delete(eventId, categoryId)
-      setEvent((prev) =>
+      setEvent((prev: Event | null) =>
         prev
           ? { ...prev, categories: prev.categories.filter((c) => c.id !== categoryId) }
           : prev
@@ -156,8 +167,9 @@ export default function EventDetailsPage({
       const response = await nomineesApi.create(eventId, categoryId, {
         name: nominee.name.trim(),
         bio: nominee.bio?.trim() || undefined,
+        photoUrl: nominee.photoUrl ?? undefined,
       })
-      setEvent((prev) =>
+      setEvent((prev: Event | null) =>
         prev
           ? {
               ...prev,
@@ -169,7 +181,10 @@ export default function EventDetailsPage({
             }
           : prev
       )
-      setNewNominee((prev) => ({ ...prev, [categoryId]: { name: '', bio: '' } }))
+      setNewNominee((prev: NomineeFormState) => ({
+        ...prev,
+        [categoryId]: { name: '', bio: '', photoUrl: null },
+      }))
     } catch (err: any) {
       alert(err?.response?.data?.message || 'Failed to add nominee.')
     } finally {
@@ -181,7 +196,7 @@ export default function EventDetailsPage({
     if (!confirm('Delete this nominee?')) return
     try {
       await nomineesApi.delete(nomineeId)
-      setEvent((prev) =>
+      setEvent((prev: Event | null) =>
         prev
           ? {
               ...prev,
@@ -215,17 +230,17 @@ export default function EventDetailsPage({
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10">
+    <div className="max-w-4xl mx-auto px-6 py-10">
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <Link href={`/organizer/events/${eventId}`}>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="rounded-full">
             <ArrowLeft className="w-4 h-4" />
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{event.name}</h1>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">{event.name}</h1>
           <p className="text-sm text-muted-foreground">Event Settings & Nominees</p>
         </div>
       </div>
@@ -233,20 +248,40 @@ export default function EventDetailsPage({
       <div className="space-y-6">
 
         {/* Event settings */}
-        <Card>
+        <Card className="border-border/60">
           <CardHeader>
             <CardTitle className="text-base">Event Settings</CardTitle>
             <CardDescription>Update your event details</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-5">
+
+            {/* Cover image */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Event Cover Image
+              </label>
+              <div className="max-w-sm">
+                <ImageUpload
+                  value={form.bannerUrl}
+                  onChange={(url) => setForm((p) => ({ ...p, bannerUrl: url }))}
+                  folder="events"
+                  label="Upload event image"
+                  hint="Helps voters recognize the event quickly"
+                  aspectRatio="video"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">Event Name</label>
               <Input
                 value={form.name}
                 onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
                 disabled={event.status === 'closed'}
+                className="rounded-lg"
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">Description</label>
               <textarea
@@ -254,9 +289,10 @@ export default function EventDetailsPage({
                 onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
                 rows={3}
                 disabled={event.status === 'closed'}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none disabled:opacity-50"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none disabled:opacity-50"
               />
             </div>
+
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">
@@ -269,6 +305,7 @@ export default function EventDetailsPage({
                   value={form.votePrice}
                   onChange={(e) => setForm((p) => ({ ...p, votePrice: e.target.value }))}
                   disabled={event.status !== 'draft'}
+                  className="rounded-lg"
                 />
               </div>
               <div>
@@ -278,6 +315,7 @@ export default function EventDetailsPage({
                   value={form.startDate}
                   onChange={(e) => setForm((p) => ({ ...p, startDate: e.target.value }))}
                   disabled={event.status === 'closed'}
+                  className="rounded-lg"
                 />
               </div>
               <div>
@@ -287,15 +325,22 @@ export default function EventDetailsPage({
                   value={form.endDate}
                   onChange={(e) => setForm((p) => ({ ...p, endDate: e.target.value }))}
                   disabled={event.status === 'closed'}
+                  className="rounded-lg"
                 />
               </div>
             </div>
+
             {event.status !== 'closed' && (
-              <Button onClick={handleSave} disabled={saving} className="gap-2">
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                className="gap-2 shadow-md"
+                style={{ backgroundImage: 'linear-gradient(135deg, var(--primary), var(--secondary))' }}
+              >
                 {saving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : saved ? (
-                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <CheckCircle className="w-4 h-4" />
                 ) : (
                   <Save className="w-4 h-4" />
                 )}
@@ -306,7 +351,7 @@ export default function EventDetailsPage({
         </Card>
 
         {/* Categories & Nominees */}
-        <Card>
+        <Card className="border-border/60">
           <CardHeader>
             <CardTitle className="text-base">Categories & Nominees</CardTitle>
             <CardDescription>
@@ -323,13 +368,19 @@ export default function EventDetailsPage({
                   onChange={(e) => setNewCategory(e.target.value)}
                   placeholder="New category name (e.g. Best Developer)"
                   onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+                  className="rounded-lg"
                 />
                 <Button
                   onClick={handleAddCategory}
                   disabled={addingCategory || !newCategory.trim()}
-                  className="gap-2 flex-shrink-0"
+                  className="gap-2 flex-shrink-0 shadow-md"
+                  style={{ backgroundImage: 'linear-gradient(135deg, var(--primary), var(--secondary))' }}
                 >
-                  {addingCategory ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  {addingCategory ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Plus className="w-4 h-4" />
+                  )}
                   Add
                 </Button>
               </div>
@@ -343,7 +394,7 @@ export default function EventDetailsPage({
             ) : (
               <div className="space-y-4">
                 {event.categories.map((category) => (
-                  <div key={category.id} className="border border-border rounded-lg p-4">
+                  <div key={category.id} className="border border-border/60 rounded-2xl p-4">
 
                     {/* Category header */}
                     <div className="flex items-center justify-between mb-3">
@@ -360,7 +411,7 @@ export default function EventDetailsPage({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive"
+                          className="h-7 w-7 text-destructive hover:text-destructive rounded-full"
                           onClick={() => handleDeleteCategory(category.id)}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -369,14 +420,27 @@ export default function EventDetailsPage({
                     </div>
 
                     {/* Nominees */}
-                    <div className="space-y-2 mb-3">
+                    <div className="space-y-2 mb-4">
                       {category.nominees.map((nominee) => (
                         <div
                           key={nominee.id}
-                          className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30"
+                          className="flex items-center justify-between p-2.5 rounded-xl bg-muted/30"
                         >
-                          <div className="flex items-center gap-2">
-                            <code className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded font-bold">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/15 to-secondary/15 flex items-center justify-center overflow-hidden flex-shrink-0">
+                              {nominee.photoUrl ? (
+                                <img
+                                  src={nominee.photoUrl}
+                                  alt={nominee.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-xs font-bold text-primary">
+                                  {nominee.name.charAt(0)}
+                                </span>
+                              )}
+                            </div>
+                            <code className="text-xs bg-gradient-to-r from-primary/10 to-secondary/10 text-primary px-2 py-0.5 rounded-md font-bold">
                               {nominee.code}
                             </code>
                             <span className="text-sm text-foreground">{nominee.name}</span>
@@ -391,7 +455,7 @@ export default function EventDetailsPage({
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-7 w-7 text-destructive hover:text-destructive"
+                              className="h-7 w-7 text-destructive hover:text-destructive rounded-full"
                               onClick={() => handleDeleteNominee(nominee.id, category.id)}
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -401,25 +465,64 @@ export default function EventDetailsPage({
                       ))}
                     </div>
 
-                    {/* Add nominee */}
+                    {/* Add nominee form */}
                     {event.status !== 'closed' && (
-                      <div className="flex gap-2">
-                        <Input
-                          value={newNominee[category.id]?.name ?? ''}
-                          onChange={(e) =>
-                            setNewNominee((prev) => ({
-                              ...prev,
-                              [category.id]: {
-                                ...prev[category.id],
-                                name: e.target.value,
-                                bio: prev[category.id]?.bio ?? '',
-                              },
-                            }))
-                          }
-                          placeholder="Nominee name"
-                          className="text-sm"
-                          onKeyDown={(e) => e.key === 'Enter' && handleAddNominee(category.id)}
-                        />
+                      <div className="border border-dashed border-border/60 rounded-xl p-3 space-y-3">
+                        <div className="flex gap-3">
+                          <div className="w-20 flex-shrink-0">
+                            <ImageUpload
+                              value={newNominee[category.id]?.photoUrl ?? null}
+                              onChange={(url) =>
+                                setNewNominee((prev: NomineeFormState) => ({
+                                  ...prev,
+                                  [category.id]: {
+                                    name: prev[category.id]?.name ?? '',
+                                    bio: prev[category.id]?.bio ?? '',
+                                    photoUrl: url,
+                                  },
+                                }))
+                              }
+                              folder="nominees"
+                              label=""
+                              hint=""
+                            />
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <Input
+                              value={newNominee[category.id]?.name ?? ''}
+                              onChange={(e) =>
+                                setNewNominee((prev: NomineeFormState) => ({
+                                  ...prev,
+                                  [category.id]: {
+                                    ...prev[category.id],
+                                    name: e.target.value,
+                                    bio: prev[category.id]?.bio ?? '',
+                                    photoUrl: prev[category.id]?.photoUrl ?? null,
+                                  },
+                                }))
+                              }
+                              placeholder="Nominee name"
+                              className="text-sm rounded-lg"
+                              onKeyDown={(e) => e.key === 'Enter' && handleAddNominee(category.id)}
+                            />
+                            <Input
+                              value={newNominee[category.id]?.bio ?? ''}
+                              onChange={(e) =>
+                                setNewNominee((prev: NomineeFormState) => ({
+                                  ...prev,
+                                  [category.id]: {
+                                    ...prev[category.id],
+                                    name: prev[category.id]?.name ?? '',
+                                    bio: e.target.value,
+                                    photoUrl: prev[category.id]?.photoUrl ?? null,
+                                  },
+                                }))
+                              }
+                              placeholder="Short bio (optional)"
+                              className="text-sm rounded-lg"
+                            />
+                          </div>
+                        </div>
                         <Button
                           size="sm"
                           onClick={() => handleAddNominee(category.id)}
@@ -427,14 +530,15 @@ export default function EventDetailsPage({
                             addingNominee === category.id ||
                             !newNominee[category.id]?.name?.trim()
                           }
-                          className="gap-1 flex-shrink-0"
+                          className="gap-1 w-full shadow-sm"
+                          style={{ backgroundImage: 'linear-gradient(135deg, var(--primary), var(--secondary))' }}
                         >
                           {addingNominee === category.id ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
                           ) : (
                             <Plus className="w-3.5 h-3.5" />
                           )}
-                          Add
+                          Add Nominee
                         </Button>
                       </div>
                     )}

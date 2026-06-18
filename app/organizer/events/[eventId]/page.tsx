@@ -16,6 +16,9 @@ import {
   TrendingUp,
   Calendar,
   Lock,
+  Vote,
+  Wallet,
+  Tag,
 } from 'lucide-react'
 
 interface Nominee {
@@ -144,20 +147,27 @@ export default function EventPage({
     )
   }
 
+  const stats = [
+    { label: 'Total Votes', value: analytics?.totalVotes.toLocaleString() ?? 0, icon: Vote, gradient: 'from-purple-500 to-fuchsia-400' },
+    { label: 'Revenue', value: `${event.currency} ${analytics?.totalRevenue.toFixed(2) ?? '0.00'}`, icon: Wallet, gradient: 'from-emerald-500 to-teal-400' },
+    { label: 'Categories', value: event.categories.length, icon: Tag, gradient: 'from-primary to-primary/60' },
+    { label: 'Nominees', value: event.categories.reduce((s, c) => s + c.nominees.length, 0), icon: Trophy, gradient: 'from-secondary to-secondary/60' },
+  ]
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
+    <div className="max-w-6xl mx-auto px-6 py-10">
 
       {/* Header */}
       <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
         <div className="flex items-start gap-3">
           <Link href="/organizer/events">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="rounded-full">
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </Link>
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-3xl font-bold text-foreground">{event.name}</h1>
+              <h1 className="text-3xl font-bold text-foreground tracking-tight">{event.name}</h1>
               <Badge variant={statusColor[event.status]} className="capitalize">
                 {event.status}
               </Badge>
@@ -172,19 +182,24 @@ export default function EventPage({
 
         <div className="flex gap-2 flex-wrap">
           <Link href={`/organizer/share?eventId=${event.id}`}>
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2 rounded-lg">
               <Share2 className="w-4 h-4" />
               Share
             </Button>
           </Link>
           <Link href={`/organizer/analytics?eventId=${event.id}`}>
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2 rounded-lg">
               <BarChart3 className="w-4 h-4" />
               Analytics
             </Button>
           </Link>
           {event.status === 'draft' && (
-            <Button onClick={handlePublish} disabled={publishing} className="gap-2">
+            <Button
+              onClick={handlePublish}
+              disabled={publishing}
+              className="gap-2 shadow-md"
+              style={{ backgroundImage: 'linear-gradient(135deg, var(--primary), var(--secondary))' }}
+            >
               {publishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <TrendingUp className="w-4 h-4" />}
               Publish Event
             </Button>
@@ -194,7 +209,7 @@ export default function EventPage({
               onClick={handleClose}
               disabled={closing}
               variant="outline"
-              className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
+              className="gap-2 rounded-lg text-destructive border-destructive/30 hover:bg-destructive/10"
             >
               {closing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
               Close Voting
@@ -205,62 +220,46 @@ export default function EventPage({
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Total Votes</p>
-            <p className="text-2xl font-bold text-foreground mt-1">
-              {analytics?.totalVotes.toLocaleString() ?? 0}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Revenue</p>
-            <p className="text-2xl font-bold text-foreground mt-1">
-              {event.currency} {analytics?.totalRevenue.toFixed(2) ?? '0.00'}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Categories</p>
-            <p className="text-2xl font-bold text-foreground mt-1">
-              {event.categories.length}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Nominees</p>
-            <p className="text-2xl font-bold text-foreground mt-1">
-              {event.categories.reduce((s, c) => s + c.nominees.length, 0)}
-            </p>
-          </CardContent>
-        </Card>
+        {stats.map((stat) => (
+          <Card key={stat.label} className="border-border/60 hover:shadow-md transition-shadow">
+            <CardContent className="pt-5 pb-5">
+              <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${stat.gradient} flex items-center justify-center mb-3 shadow-sm`}>
+                <stat.icon className="w-4.5 h-4.5 text-white" />
+              </div>
+              <p className="text-sm text-muted-foreground">{stat.label}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{stat.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="nominees">
-        <TabsList className="mb-6">
-          <TabsTrigger value="nominees">Nominees</TabsTrigger>
-          <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
-          <TabsTrigger value="details">Details</TabsTrigger>
+        <TabsList className="mb-6 bg-muted/60 p-1 rounded-xl">
+          <TabsTrigger value="nominees" className="rounded-lg">Nominees</TabsTrigger>
+          <TabsTrigger value="leaderboard" className="rounded-lg">Leaderboard</TabsTrigger>
+          <TabsTrigger value="details" className="rounded-lg">Details</TabsTrigger>
         </TabsList>
 
         {/* Nominees tab */}
         <TabsContent value="nominees" className="space-y-4">
           {event.categories.length === 0 ? (
-            <Card>
+            <Card className="border-border/60">
               <CardContent className="py-12 text-center">
                 <p className="text-muted-foreground mb-4">No categories yet</p>
                 <Link href={`/organizer/events/${event.id}/details`}>
-                  <Button>Add Categories & Nominees</Button>
+                  <Button
+                    className="shadow-md"
+                    style={{ backgroundImage: 'linear-gradient(135deg, var(--primary), var(--secondary))' }}
+                  >
+                    Add Categories & Nominees
+                  </Button>
                 </Link>
               </CardContent>
             </Card>
           ) : (
             event.categories.map((category) => (
-              <Card key={category.id}>
+              <Card key={category.id} className="border-border/60">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base">{category.name}</CardTitle>
@@ -277,10 +276,10 @@ export default function EventPage({
                       {category.nominees.map((nominee) => (
                         <div
                           key={nominee.id}
-                          className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border"
+                          className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/60"
                         >
                           <div className="flex items-center gap-3">
-                            <code className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded font-bold">
+                            <code className="text-xs bg-gradient-to-r from-primary/10 to-secondary/10 text-primary px-2 py-0.5 rounded-md font-bold">
                               {nominee.code}
                             </code>
                             <span className="text-sm font-medium text-foreground">
@@ -309,14 +308,14 @@ export default function EventPage({
         {/* Leaderboard tab */}
         <TabsContent value="leaderboard" className="space-y-4">
           {!analytics?.leaderboard.length ? (
-            <Card>
+            <Card className="border-border/60">
               <CardContent className="py-12 text-center">
                 <p className="text-muted-foreground">No votes recorded yet.</p>
               </CardContent>
             </Card>
           ) : (
             analytics.leaderboard.map((category) => (
-              <Card key={category.categoryId}>
+              <Card key={category.categoryId} className="border-border/60">
                 <CardHeader>
                   <CardTitle className="text-base">{category.categoryName}</CardTitle>
                 </CardHeader>
@@ -328,7 +327,9 @@ export default function EventPage({
                       return (
                         <div key={nominee.id} className="flex items-center gap-3">
                           <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                            index === 0 ? 'bg-yellow-400 text-yellow-900' : 'bg-muted text-muted-foreground'
+                            index === 0
+                              ? 'bg-gradient-to-br from-yellow-400 to-amber-300 text-yellow-900 shadow-sm'
+                              : 'bg-muted text-muted-foreground'
                           }`}>
                             {index + 1}
                           </div>
@@ -343,8 +344,11 @@ export default function EventPage({
                             </div>
                             <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-primary rounded-full"
-                                style={{ width: `${percentage}%` }}
+                                className="h-full rounded-full"
+                                style={{
+                                  width: `${percentage}%`,
+                                  backgroundImage: 'linear-gradient(90deg, var(--primary), var(--secondary))',
+                                }}
                               />
                             </div>
                           </div>
@@ -360,7 +364,7 @@ export default function EventPage({
 
         {/* Details tab */}
         <TabsContent value="details">
-          <Card>
+          <Card className="border-border/60">
             <CardHeader>
               <CardTitle className="text-base">Event Information</CardTitle>
             </CardHeader>
@@ -403,7 +407,7 @@ export default function EventPage({
               </div>
               <div className="pt-2">
                 <Link href={`/organizer/events/${event.id}/details`}>
-                  <Button variant="outline" className="gap-2">
+                  <Button variant="outline" className="gap-2 rounded-lg">
                     Edit Event Settings
                   </Button>
                 </Link>

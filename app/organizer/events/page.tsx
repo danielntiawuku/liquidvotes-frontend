@@ -81,16 +81,19 @@ export default function OrganizerEventsPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
+    <div className="max-w-6xl mx-auto px-6 py-10">
 
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-wrap justify-between items-end gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">My Events</h1>
-          <p className="text-muted-foreground mt-1">Manage all your voting events</p>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Manage Events</h1>
+          <p className="text-muted-foreground mt-1">All your voting events in one place</p>
         </div>
         <Link href="/organizer/events/new">
-          <Button className="gap-2">
+          <Button
+            className="gap-2 shadow-md hover:shadow-lg transition-shadow"
+            style={{ backgroundImage: 'linear-gradient(135deg, var(--primary), var(--secondary))' }}
+          >
             <Plus className="w-4 h-4" />
             New Event
           </Button>
@@ -99,7 +102,7 @@ export default function OrganizerEventsPage() {
 
       {/* Error */}
       {error && (
-        <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-3 text-sm text-destructive mb-6">
+        <div className="bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3 text-sm text-destructive mb-6">
           {error}
         </div>
       )}
@@ -107,13 +110,20 @@ export default function OrganizerEventsPage() {
       {/* Empty state */}
       {!loading && events.length === 0 && (
         <div className="text-center py-20">
-          <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground mb-2">No events yet</p>
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center mx-auto mb-4">
+            <Trophy className="w-7 h-7 text-primary" />
+          </div>
+          <p className="text-foreground font-medium mb-1">No events yet</p>
           <p className="text-sm text-muted-foreground mb-6">
             Create your first voting event to get started
           </p>
           <Link href="/organizer/events/new">
-            <Button>Create Event</Button>
+            <Button
+              className="shadow-md"
+              style={{ backgroundImage: 'linear-gradient(135deg, var(--primary), var(--secondary))' }}
+            >
+              Create Event
+            </Button>
           </Link>
         </div>
       )}
@@ -121,31 +131,37 @@ export default function OrganizerEventsPage() {
       {/* Events list */}
       <div className="space-y-4">
         {events.map((event) => (
-          <Card key={event.id} className="hover:shadow-sm transition">
+          <Card
+            key={event.id}
+            className="border-border/60 hover:border-primary/30 hover:shadow-md transition-all overflow-hidden"
+          >
             <CardContent className="p-6">
-              <div className="flex items-start justify-between gap-6">
+              <div className="flex flex-wrap items-start justify-between gap-6">
                 <div className="flex-1 min-w-0">
 
                   {/* Name + status */}
-                  <div className="flex items-center gap-3 mb-1 flex-wrap">
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
+                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/15 to-secondary/15 flex items-center justify-center flex-shrink-0">
+                      <Trophy className="w-4 h-4 text-primary" />
+                    </div>
                     <h3 className="text-lg font-bold text-foreground">{event.name}</h3>
                     <Badge variant={statusColor[event.status]} className="capitalize">
                       {event.status}
                     </Badge>
-                    <code className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded font-bold">
+                    <code className="text-xs bg-gradient-to-r from-primary/10 to-secondary/10 text-primary px-2 py-0.5 rounded-md font-bold">
                       {event.codePrefix}**
                     </code>
                   </div>
 
                   {/* Dates */}
-                  <p className="text-sm text-muted-foreground mb-4 flex items-center gap-1">
+                  <p className="text-sm text-muted-foreground mb-4 flex items-center gap-1 ml-12">
                     <Calendar className="w-3.5 h-3.5" />
                     {new Date(event.startDate).toLocaleDateString()} —{' '}
                     {new Date(event.endDate).toLocaleDateString()}
                   </p>
 
                   {/* Stats */}
-                  <div className="flex items-center gap-6 flex-wrap text-sm">
+                  <div className="flex items-center gap-6 flex-wrap text-sm ml-12">
                     <div className="flex items-center gap-1.5">
                       <Trophy className="w-4 h-4 text-muted-foreground" />
                       <span className="text-muted-foreground">
@@ -170,13 +186,13 @@ export default function OrganizerEventsPage() {
                 {/* Actions */}
                 <div className="flex flex-col gap-2 flex-shrink-0">
                   <Link href={`/organizer/events/${event.id}`}>
-                    <Button size="sm" className="w-full gap-2">
+                    <Button size="sm" className="w-full gap-2 rounded-lg">
                       <Eye className="w-3.5 h-3.5" />
                       Manage
                     </Button>
                   </Link>
                   <Link href={`/organizer/share?eventId=${event.id}`}>
-                    <Button size="sm" variant="outline" className="w-full gap-2">
+                    <Button size="sm" variant="outline" className="w-full gap-2 rounded-lg">
                       <Share2 className="w-3.5 h-3.5" />
                       Share
                     </Button>
@@ -185,7 +201,7 @@ export default function OrganizerEventsPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="w-full gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
+                      className="w-full gap-2 rounded-lg text-destructive border-destructive/30 hover:bg-destructive/10"
                       onClick={() => handleDelete(event.id)}
                       disabled={deletingId === event.id}
                     >
