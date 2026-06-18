@@ -197,6 +197,12 @@ export const adminApi = {
   getOrganizations: () =>
     api.get('/admin/organizations'),
 
+  getOrganization: (id: string) =>
+    api.get(`/admin/organizations/${id}`),
+
+  updateOrganization: (id: string, data: object) =>
+    api.put(`/admin/organizations/${id}`, data),
+
   getUsers: () =>
     api.get('/admin/users'),
 

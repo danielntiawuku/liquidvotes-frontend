@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -160,9 +161,12 @@ export default function AdminOrganizationsPage() {
                           <Building2 className="w-4 h-4 text-primary" />
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">
-                            {org.organizationName ?? org.name}
-                          </p>
+                            <Link
+                              href={`/admin/organizations/${org.id}`}
+                              className="font-medium text-foreground hover:text-primary hover:underline"
+                            >
+                              {org.organizationName ?? org.name}
+                            </Link>
                           {org.organizationType && (
                             <p className="text-xs text-muted-foreground">{org.organizationType}</p>
                           )}
