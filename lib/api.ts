@@ -121,6 +121,9 @@ export const nomineesApi = {
   getByCode: (code: string) =>
     api.get(`/nominees/code/${code}`),
 
+  getLeaderboard: (categoryId: string) =>
+    api.get(`/nominees/category/${categoryId}/leaderboard`),
+
   getById: (id: string) =>
     api.get(`/nominees/${id}`),
 
