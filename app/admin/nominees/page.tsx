@@ -1,30 +1,28 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Search, CheckCircle, XCircle, Eye } from 'lucide-react'
+import { adminApi } from '@/lib/api'
+import { Search, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 
 interface Nominee {
   id: string
   name: string
   code: string
-  category: string
-  event: string
-  votes: number
   status: 'pending' | 'approved' | 'rejected'
+  category: {
+    event: {
+      name: string
+      organizerId: string
+    }
+  }
+  _count: {
+    votes: number
+  }
 }
-
-const mockNominees: Nominee[] = [
-  { id: '1', name: 'Sarah Mensah', code: 'WA01', category: 'Best Developer', event: 'Tech Awards 2026', votes: 320, status: 'approved' },
-  { id: '2', name: 'Kwame Asante', code: 'WA02', category: 'Best Designer', event: 'Tech Awards 2026', votes: 210, status: 'approved' },
-  { id: '3', name: 'Ama Owusu', code: 'WA03', category: 'Best Startup', event: 'Business Awards 2026', votes: 0, status: 'pending' },
-  { id: '4', name: 'Kofi Boateng', code: 'WA04', category: 'Best CEO', event: 'Business Awards 2026', votes: 0, status: 'pending' },
-  { id: '5', name: 'Abena Darko', code: 'WA05', category: 'Best Artist', event: 'Creative Awards 2026', votes: 145, status: 'approved' },
-  { id: '6', name: 'Yaw Frimpong', code: 'WA06', category: 'Best Artist', event: 'Creative Awards 2026', votes: 0, status: 'rejected' },
-]
 
 const statusColor = {
   pending: 'secondary',
@@ -33,17 +31,58 @@ const statusColor = {
 } as const
 
 export default function AdminNomineesPage() {
+  const [nominees, setNominees] = useState<Nominee[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
+  const [moderatingId, setModeratingId] = useState<string | null>(null)
 
-  const filtered = mockNominees.filter((n) => {
+  useEffect(() => {
+    const fetchNominees = async () => {
+      try {
+        const response = await adminApi.getAllNominees()
+        setNominees(response.data.nominees)
+      } catch {
+        setError('Failed to load nominees.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchNominees()
+  }, [])
+
+  const handleModerate = async (id: string, status: 'approved' | 'rejected') => {
+    setModeratingId(id)
+    try {
+      await adminApi.moderateNominee(id, { status })
+      setNominees((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, status } : n))
+      )
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Failed to update nominee status.')
+    } finally {
+      setModeratingId(null)
+    }
+  }
+
+  const filtered = nominees.filter((n) => {
     const matchesSearch =
       n.name.toLowerCase().includes(search.toLowerCase()) ||
       n.code.toLowerCase().includes(search.toLowerCase()) ||
-      n.event.toLowerCase().includes(search.toLowerCase())
+      n.category.event.name.toLowerCase().includes(search.toLowerCase())
     const matchesFilter = filter === 'all' || n.status === filter
     return matchesSearch && matchesFilter
   })
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
@@ -56,18 +95,25 @@ export default function AdminNomineesPage() {
         </div>
       </div>
 
+      {/* Error */}
+      {error && (
+        <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-3 text-sm text-destructive mb-6">
+          {error}
+        </div>
+      )}
+
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-foreground">{mockNominees.length}</div>
+            <div className="text-2xl font-bold text-foreground">{nominees.length}</div>
             <p className="text-sm text-muted-foreground mt-1">Total Nominees</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-yellow-500">
-              {mockNominees.filter((n) => n.status === 'pending').length}
+              {nominees.filter((n) => n.status === 'pending').length}
             </div>
             <p className="text-sm text-muted-foreground mt-1">Pending Review</p>
           </CardContent>
@@ -75,7 +121,7 @@ export default function AdminNomineesPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-green-500">
-              {mockNominees.filter((n) => n.status === 'approved').length}
+              {nominees.filter((n) => n.status === 'approved').length}
             </div>
             <p className="text-sm text-muted-foreground mt-1">Approved</p>
           </CardContent>
@@ -83,7 +129,7 @@ export default function AdminNomineesPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-destructive">
-              {mockNominees.filter((n) => n.status === 'rejected').length}
+              {nominees.filter((n) => n.status === 'rejected').length}
             </div>
             <p className="text-sm text-muted-foreground mt-1">Rejected</p>
           </CardContent>
@@ -128,7 +174,6 @@ export default function AdminNomineesPage() {
                 <tr className="border-b border-border">
                   <th className="text-left py-3 px-4 text-muted-foreground font-medium">Nominee</th>
                   <th className="text-left py-3 px-4 text-muted-foreground font-medium">Code</th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium">Category</th>
                   <th className="text-left py-3 px-4 text-muted-foreground font-medium">Event</th>
                   <th className="text-left py-3 px-4 text-muted-foreground font-medium">Votes</th>
                   <th className="text-left py-3 px-4 text-muted-foreground font-medium">Status</th>
@@ -142,28 +187,44 @@ export default function AdminNomineesPage() {
                     <td className="py-3 px-4">
                       <code className="bg-muted px-2 py-0.5 rounded text-xs">{nominee.code}</code>
                     </td>
-                    <td className="py-3 px-4 text-muted-foreground">{nominee.category}</td>
-                    <td className="py-3 px-4 text-muted-foreground">{nominee.event}</td>
-                    <td className="py-3 px-4 text-muted-foreground">{nominee.votes.toLocaleString()}</td>
+                    <td className="py-3 px-4 text-muted-foreground">{nominee.category.event.name}</td>
+                    <td className="py-3 px-4 text-muted-foreground">{nominee._count.votes.toLocaleString()}</td>
                     <td className="py-3 px-4">
-                      <Badge variant={statusColor[nominee.status]}>
+                      <Badge variant={statusColor[nominee.status]} className="capitalize">
                         {nominee.status}
                       </Badge>
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Eye className="w-3.5 h-3.5" />
-                        </Button>
-                        {nominee.status === 'pending' && (
-                          <>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:text-green-600">
+                        {nominee.status !== 'approved' && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-green-600 hover:text-green-600"
+                            onClick={() => handleModerate(nominee.id, 'approved')}
+                            disabled={moderatingId === nominee.id}
+                          >
+                            {moderatingId === nominee.id ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
                               <CheckCircle className="w-3.5 h-3.5" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                            )}
+                          </Button>
+                        )}
+                        {nominee.status !== 'rejected' && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => handleModerate(nominee.id, 'rejected')}
+                            disabled={moderatingId === nominee.id}
+                          >
+                            {moderatingId === nominee.id ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
                               <XCircle className="w-3.5 h-3.5" />
-                            </Button>
-                          </>
+                            )}
+                          </Button>
                         )}
                       </div>
                     </td>
@@ -171,7 +232,7 @@ export default function AdminNomineesPage() {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-muted-foreground">
+                    <td colSpan={6} className="py-8 text-center text-muted-foreground">
                       No nominees found.
                     </td>
                   </tr>
