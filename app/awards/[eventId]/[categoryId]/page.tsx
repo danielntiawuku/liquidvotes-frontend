@@ -3,7 +3,6 @@
 import { useState, useEffect, use } from 'react'
 import { Navigation } from '@/components/shared/Navigation'
 import Footer from '@/components/shared/Footer'
-import { Button } from '@/components/ui/button'
 import { eventsApi } from '@/lib/api'
 import { Loader2, ArrowLeft, ArrowRight, Trophy } from 'lucide-react'
 import Link from 'next/link'
@@ -130,12 +129,21 @@ export default function CategoryNomineesPage({
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
               {approvedNominees.map((nominee) => (
-                <div
+                <Link
                   key={nominee.id}
+                  href={`/voter/nominee/${nominee.code}`}
                   className="flex flex-col p-5 border border-border rounded-xl hover:border-primary hover:shadow-sm transition bg-card"
                 >
-                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl mb-4">
-                    {nominee.name.charAt(0)}
+                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl mb-4 overflow-hidden">
+                    {nominee.photoUrl ? (
+                      <img
+                        src={nominee.photoUrl}
+                        alt={nominee.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      nominee.name.charAt(0)
+                    )}
                   </div>
 
                   <h3 className="font-semibold text-foreground mb-1">{nominee.name}</h3>
@@ -150,14 +158,12 @@ export default function CategoryNomineesPage({
                     <code className="text-xs bg-primary/10 text-primary px-2 py-1 rounded font-bold">
                       {nominee.code}
                     </code>
-                    <Link href={`/voter/checkout?code=${nominee.code}`}>
-                      <Button size="sm" className="gap-1">
-                        Vote
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </Button>
-                    </Link>
+                    <span className="flex items-center gap-1 text-sm font-medium text-primary">
+                      View Profile
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
