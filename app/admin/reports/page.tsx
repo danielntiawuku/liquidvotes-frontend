@@ -72,7 +72,7 @@ export default function AdminReportsPage() {
   const maxRevenue = Math.max(...Object.values(reports?.revenueByDay ?? { _: 0 }))
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
       {/* Header */}
       <div className="mb-8">

@@ -406,7 +406,7 @@ export default function OrganizationDetailPage({
           {org.payments.length === 0 ? (
             <p className="text-sm text-muted-foreground p-6 text-center">No payments yet.</p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto w-full -mx-4 sm:mx-0 px-4 sm:px-0">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border">

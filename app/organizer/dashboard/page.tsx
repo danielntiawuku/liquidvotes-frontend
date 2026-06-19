@@ -113,7 +113,7 @@ export default function OrganizerDashboardPage() {
   ]
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
       {/* Header */}
       <div className="flex flex-wrap justify-between items-end gap-4 mb-10">
@@ -136,7 +136,7 @@ export default function OrganizerDashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-8">
         {stats.map((stat) => (
           <Card
             key={stat.label}

@@ -79,7 +79,7 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
@@ -157,7 +157,7 @@ export default function AdminUsersPage() {
           <CardTitle className="text-base">All Users</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto w-full -mx-4 sm:mx-0 px-4 sm:px-0">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">

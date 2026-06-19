@@ -81,10 +81,10 @@ export default function OrganizerEventsPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
 
       {/* Header */}
-      <div className="flex flex-wrap justify-between items-end gap-4 mb-8">
+      <div className="flex flex-wrap justify-between items-start gap-3 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground tracking-tight">Manage Events</h1>
           <p className="text-muted-foreground mt-1">All your voting events in one place</p>

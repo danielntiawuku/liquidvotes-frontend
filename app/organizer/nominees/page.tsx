@@ -119,7 +119,7 @@ export default function NomineesManagementPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
 
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
@@ -194,7 +194,7 @@ export default function NomineesManagementPage() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
             {[
               {
                 value: allNominees.length,

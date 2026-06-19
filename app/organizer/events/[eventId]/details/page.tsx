@@ -230,7 +230,7 @@ export default function EventDetailsPage({
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
@@ -293,7 +293,7 @@ export default function EventDetailsPage({
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">
                   Vote Price ({event.currency})

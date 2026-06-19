@@ -120,7 +120,7 @@ export default function AwardsPage() {
 
           {/* Events grid */}
           {!loading && filtered.length > 0 && (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {filtered.map((event) => (
                 <Link
                   key={event.id}
