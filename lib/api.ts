@@ -186,6 +186,15 @@ export const organizerApi = {
   publishWinners: (eventId: string, data: object) =>
     api.post(`/organizer/events/${eventId}/winners`, data),
 
+  getSettlements: () =>
+  api.get('/organizer/settlements'),
+
+  savePayoutAccount: (data: object) =>
+  api.post('/organizer/settlements/payout-account', data),
+
+  requestWithdrawal: (amount: number) =>
+  api.post('/organizer/settlements/withdraw', { amount }),
+
   updateProfile: (data: object) =>
     api.put('/organizer/profile', data),
 }
