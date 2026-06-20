@@ -13,12 +13,14 @@ import {
   Trophy,
   Loader2,
   ArrowLeft,
-  TrendingUp,
+  Send,
   Calendar,
   Lock,
   Vote,
   Wallet,
   Tag,
+  Clock,
+  AlertCircle,
 } from 'lucide-react'
 
 interface Nominee {
@@ -41,12 +43,13 @@ interface Event {
   id: string
   name: string
   description: string
-  status: 'draft' | 'published' | 'closed'
+  status: 'draft' | 'pending_review' | 'published' | 'closed'
   startDate: string
   endDate: string
   votePrice: string
   currency: string
   codePrefix: string
+  rejectionReason: string | null
   categories: {
     id: string
     name: string
@@ -69,8 +72,16 @@ interface Analytics {
 
 const statusColor = {
   draft: 'secondary',
+  pending_review: 'secondary',
   published: 'default',
   closed: 'secondary',
+} as const
+
+const statusLabel = {
+  draft: 'Draft',
+  pending_review: 'Pending Review',
+  published: 'Published',
+  closed: 'Closed',
 } as const
 
 export default function EventPage({
@@ -82,7 +93,7 @@ export default function EventPage({
   const [event, setEvent] = useState<Event | null>(null)
   const [analytics, setAnalytics] = useState<Analytics | null>(null)
   const [loading, setLoading] = useState(true)
-  const [publishing, setPublishing] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [closing, setClosing] = useState(false)
   const [error, setError] = useState('')
 
@@ -105,16 +116,16 @@ export default function EventPage({
     fetchData()
   }, [eventId])
 
-  const handlePublish = async () => {
-    if (!confirm('Publish this event? Voters will be able to start voting.')) return
-    setPublishing(true)
+  const handleSubmitForReview = async () => {
+    if (!confirm('Submit this event for admin review? You won\'t be able to edit core details until it\'s reviewed.')) return
+    setSubmitting(true)
     try {
-      await eventsApi.publish(eventId)
-      setEvent((prev) => prev ? { ...prev, status: 'published' } : prev)
+      await eventsApi.submitForReview(eventId)
+      setEvent((prev) => prev ? { ...prev, status: 'pending_review' } : prev)
     } catch (err: any) {
-      alert(err?.response?.data?.message || 'Failed to publish event.')
+      alert(err?.response?.data?.message || 'Failed to submit event for review.')
     } finally {
-      setPublishing(false)
+      setSubmitting(false)
     }
   }
 
@@ -155,10 +166,10 @@ export default function EventPage({
   ]
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
+      <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
         <div className="flex items-start gap-3">
           <Link href="/organizer/events">
             <Button variant="ghost" size="icon" className="rounded-full">
@@ -169,7 +180,7 @@ export default function EventPage({
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-3xl font-bold text-foreground tracking-tight">{event.name}</h1>
               <Badge variant={statusColor[event.status]} className="capitalize">
-                {event.status}
+                {statusLabel[event.status]}
               </Badge>
             </div>
             <p className="text-muted-foreground mt-1 text-sm flex items-center gap-1">
@@ -195,13 +206,13 @@ export default function EventPage({
           </Link>
           {event.status === 'draft' && (
             <Button
-              onClick={handlePublish}
-              disabled={publishing}
+              onClick={handleSubmitForReview}
+              disabled={submitting}
               className="gap-2 shadow-md"
               style={{ backgroundImage: 'linear-gradient(135deg, var(--primary), var(--secondary))' }}
             >
-              {publishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <TrendingUp className="w-4 h-4" />}
-              Publish Event
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              Submit for Review
             </Button>
           )}
           {event.status === 'published' && (
@@ -218,8 +229,32 @@ export default function EventPage({
         </div>
       </div>
 
+      {/* Pending review banner */}
+      {event.status === 'pending_review' && (
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 mb-6">
+          <Clock className="w-5 h-5 text-blue-600 flex-shrink-0" />
+          <p className="text-sm text-blue-700 dark:text-blue-400">
+            This event is awaiting admin review. You'll be notified once it's approved or if changes are needed.
+          </p>
+        </div>
+      )}
+
+      {/* Rejection reason banner */}
+      {event.status === 'draft' && event.rejectionReason && (
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 mb-6">
+          <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-destructive">Your event was not approved</p>
+            <p className="text-sm text-destructive/90 mt-0.5">{event.rejectionReason}</p>
+            <p className="text-xs text-muted-foreground mt-1.5">
+              Make the necessary changes and submit for review again.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
         {stats.map((stat) => (
           <Card key={stat.label} className="border-border/60 hover:shadow-md transition-shadow">
             <CardContent className="pt-5 pb-5">
@@ -369,14 +404,14 @@ export default function EventPage({
               <CardTitle className="text-base">Event Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">Event Name</p>
                   <p className="font-medium text-foreground mt-1">{event.name}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Status</p>
-                  <p className="font-medium text-foreground mt-1 capitalize">{event.status}</p>
+                  <p className="font-medium text-foreground mt-1">{statusLabel[event.status]}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Vote Price</p>

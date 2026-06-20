@@ -84,8 +84,8 @@ export const eventsApi = {
   delete: (id: string) =>
     api.delete(`/events/${id}`),
 
-  publish: (id: string) =>
-    api.post(`/events/${id}/publish`),
+  submitForReview: (id: string) =>
+    api.post(`/events/${id}/submit`),
 
   close: (id: string) =>
     api.post(`/events/${id}/close`),
@@ -187,13 +187,13 @@ export const organizerApi = {
     api.post(`/organizer/events/${eventId}/winners`, data),
 
   getSettlements: () =>
-  api.get('/organizer/settlements'),
+    api.get('/organizer/settlements'),
 
   savePayoutAccount: (data: object) =>
-  api.post('/organizer/settlements/payout-account', data),
+    api.post('/organizer/settlements/payout-account', data),
 
   requestWithdrawal: (amount: number) =>
-  api.post('/organizer/settlements/withdraw', { amount }),
+    api.post('/organizer/settlements/withdraw', { amount }),
 
   updateProfile: (data: object) =>
     api.put('/organizer/profile', data),
@@ -223,6 +223,12 @@ export const adminApi = {
 
   getAllEvents: () =>
     api.get('/admin/events'),
+
+  approveEvent: (id: string) =>
+    api.post(`/admin/events/${id}/approve`),
+
+  rejectEvent: (id: string, reason: string) =>
+    api.post(`/admin/events/${id}/reject`, { reason }),
 
   getAllNominees: () =>
     api.get('/admin/nominees'),
