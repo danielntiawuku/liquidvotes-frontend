@@ -14,6 +14,13 @@ import { ChevronRight, Loader2 } from 'lucide-react'
 
 type WizardStep = 'basic' | 'details' | 'settings' | 'review'
 
+const stepFields: Record<WizardStep, (keyof EventFormData)[]> = {
+  basic: ['name', 'description'],
+  details: ['startDate', 'endDate'],
+  settings: ['pricePerVote', 'currency', 'votingMethod', 'allowInternational'],
+  review: [],
+}
+
 export default function CreateEventPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState<WizardStep>('basic')
@@ -23,6 +30,7 @@ export default function CreateEventPage() {
   const {
     register,
     handleSubmit,
+    trigger,
     formState: { errors },
     watch,
   } = useForm<EventFormData>({
@@ -51,9 +59,12 @@ export default function CreateEventPage() {
       router.push(`/organizer/events/${eventId}/details`)
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Failed to create event. Please try again.')
-    } finally {
       setLoading(false)
     }
+  }
+
+  const onInvalid = () => {
+    setError('Please check the highlighted fields before creating the event.')
   }
 
   const steps: { id: WizardStep; label: string; description: string }[] = [
@@ -63,10 +74,17 @@ export default function CreateEventPage() {
     { id: 'review', label: 'Review', description: 'Confirm and create' },
   ]
 
-  const goNext = () => {
+  const goNext = async () => {
+    // Validate only the current step's fields before advancing
+    const fieldsToValidate = stepFields[currentStep]
+    const isValid = fieldsToValidate.length === 0 || (await trigger(fieldsToValidate))
+
+    if (!isValid) return
+
     const stepIndex = steps.findIndex((s) => s.id === currentStep)
     if (stepIndex < steps.length - 1) {
       setCurrentStep(steps[stepIndex + 1].id)
+      setError('')
     }
   }
 
@@ -74,6 +92,7 @@ export default function CreateEventPage() {
     const stepIndex = steps.findIndex((s) => s.id === currentStep)
     if (stepIndex > 0) {
       setCurrentStep(steps[stepIndex - 1].id)
+      setError('')
     }
   }
 
@@ -113,7 +132,7 @@ export default function CreateEventPage() {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
         <Card className="p-8 mb-8">
 
           {/* Step 1: Basic Info */}
