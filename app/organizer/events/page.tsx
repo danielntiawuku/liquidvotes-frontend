@@ -15,12 +15,14 @@ import {
   Loader2,
   Trophy,
   Share2,
+  Clock,
+  AlertCircle,
 } from 'lucide-react'
 
 interface Event {
   id: string
   name: string
-  status: 'draft' | 'published' | 'closed'
+  status: 'draft' | 'pending_review' | 'published' | 'closed'
   startDate: string
   endDate: string
   votePrice: string
@@ -29,12 +31,21 @@ interface Event {
   categoriesCount: number
   nomineesCount: number
   revenue: number
+  rejectionReason: string | null
 }
 
 const statusColor = {
   draft: 'secondary',
+  pending_review: 'secondary',
   published: 'default',
   closed: 'secondary',
+} as const
+
+const statusLabel = {
+  draft: 'Draft',
+  pending_review: 'Pending Review',
+  published: 'Published',
+  closed: 'Closed',
 } as const
 
 export default function OrganizerEventsPage() {
@@ -145,13 +156,22 @@ export default function OrganizerEventsPage() {
                       <Trophy className="w-4 h-4 text-primary" />
                     </div>
                     <h3 className="text-lg font-bold text-foreground">{event.name}</h3>
-                    <Badge variant={statusColor[event.status]} className="capitalize">
-                      {event.status}
+                    <Badge variant={statusColor[event.status]} className="gap-1">
+                      {event.status === 'pending_review' && <Clock className="w-3 h-3" />}
+                      {statusLabel[event.status]}
                     </Badge>
                     <code className="text-xs bg-gradient-to-r from-primary/10 to-secondary/10 text-primary px-2 py-0.5 rounded-md font-bold">
                       {event.codePrefix}**
                     </code>
                   </div>
+
+                  {/* Rejection reason */}
+                  {event.status === 'draft' && event.rejectionReason && (
+                    <div className="flex items-start gap-2 ml-12 mb-3 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 max-w-xl">
+                      <AlertCircle className="w-3.5 h-3.5 text-destructive flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-destructive">{event.rejectionReason}</p>
+                    </div>
+                  )}
 
                   {/* Dates */}
                   <p className="text-sm text-muted-foreground mb-4 flex items-center gap-1 ml-12">
