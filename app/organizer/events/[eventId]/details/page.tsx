@@ -15,6 +15,8 @@ import {
   Loader2,
   Save,
   CheckCircle,
+  XCircle,
+  Sparkles,
 } from 'lucide-react'
 
 type NomineeFormState = Record<string, { name: string; bio: string; photoUrl: string | null }>
@@ -46,6 +48,7 @@ interface Event {
   currency: string
   codePrefix: string
   bannerUrl: string | null
+  autoApproveNominees: boolean
   categories: Category[]
 }
 
@@ -69,6 +72,7 @@ export default function EventDetailsPage({
     startDate: '',
     endDate: '',
     bannerUrl: null as string | null,
+    autoApproveNominees: false,
   })
 
   // Add category
@@ -78,6 +82,9 @@ export default function EventDetailsPage({
   // Add nominee
   const [newNominee, setNewNominee] = useState<NomineeFormState>({})
   const [addingNominee, setAddingNominee] = useState<string | null>(null)
+
+  // Moderating nominee
+  const [moderatingId, setModeratingId] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -92,6 +99,7 @@ export default function EventDetailsPage({
           startDate: e.startDate.split('T')[0],
           endDate: e.endDate.split('T')[0],
           bannerUrl: e.bannerUrl ?? null,
+          autoApproveNominees: e.autoApproveNominees ?? false,
         })
       } catch {
         setError('Failed to load event.')
@@ -113,9 +121,12 @@ export default function EventDetailsPage({
         startDate: form.startDate,
         endDate: form.endDate,
         bannerUrl: form.bannerUrl ?? undefined,
+        autoApproveNominees: form.autoApproveNominees,
       })
       setEvent((prev: Event | null) =>
-        prev ? { ...prev, bannerUrl: form.bannerUrl } : prev
+        prev
+          ? { ...prev, bannerUrl: form.bannerUrl, autoApproveNominees: form.autoApproveNominees }
+          : prev
       )
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
@@ -210,6 +221,38 @@ export default function EventDetailsPage({
       )
     } catch (err: any) {
       alert(err?.response?.data?.message || 'Failed to delete nominee.')
+    }
+  }
+
+  const handleModerateNominee = async (
+    nomineeId: string,
+    categoryId: string,
+    status: 'approved' | 'rejected'
+  ) => {
+    setModeratingId(nomineeId)
+    try {
+      await nomineesApi.update(nomineeId, { status })
+      setEvent((prev: Event | null) =>
+        prev
+          ? {
+              ...prev,
+              categories: prev.categories.map((c) =>
+                c.id === categoryId
+                  ? {
+                      ...c,
+                      nominees: c.nominees.map((n) =>
+                        n.id === nomineeId ? { ...n, status } : n
+                      ),
+                    }
+                  : c
+              ),
+            }
+          : prev
+      )
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Failed to update nominee status.')
+    } finally {
+      setModeratingId(null)
     }
   }
 
@@ -330,6 +373,34 @@ export default function EventDetailsPage({
               </div>
             </div>
 
+            {/* Auto-approve toggle */}
+            <div className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/60">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/15 to-secondary/15 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Auto-approve nominees</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    New nominees you add will be approved automatically instead of needing manual review.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setForm((p) => ({ ...p, autoApproveNominees: !p.autoApproveNominees }))}
+                disabled={event.status === 'closed'}
+                className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
+                  form.autoApproveNominees ? 'bg-primary' : 'bg-muted-foreground/30'
+                } disabled:opacity-50`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
+                    form.autoApproveNominees ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
             {event.status !== 'closed' && (
               <Button
                 onClick={handleSave}
@@ -355,7 +426,7 @@ export default function EventDetailsPage({
           <CardHeader>
             <CardTitle className="text-base">Categories & Nominees</CardTitle>
             <CardDescription>
-              Manage voting categories and add nominees with auto-generated codes
+              Manage voting categories, add nominees, and approve who appears on the public page
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -424,7 +495,7 @@ export default function EventDetailsPage({
                       {category.nominees.map((nominee) => (
                         <div
                           key={nominee.id}
-                          className="flex items-center justify-between p-2.5 rounded-xl bg-muted/30"
+                          className="flex items-center justify-between p-2.5 rounded-xl bg-muted/30 flex-wrap gap-2"
                         >
                           <div className="flex items-center gap-2.5">
                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/15 to-secondary/15 flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -445,22 +516,64 @@ export default function EventDetailsPage({
                             </code>
                             <span className="text-sm text-foreground">{nominee.name}</span>
                             <Badge
-                              variant={nominee.status === 'approved' ? 'default' : 'secondary'}
+                              variant={
+                                nominee.status === 'approved'
+                                  ? 'default'
+                                  : nominee.status === 'rejected'
+                                  ? 'destructive'
+                                  : 'secondary'
+                              }
                               className="text-xs capitalize"
                             >
                               {nominee.status}
                             </Badge>
                           </div>
-                          {event.status !== 'closed' && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-destructive hover:text-destructive rounded-full"
-                              onClick={() => handleDeleteNominee(nominee.id, category.id)}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
-                          )}
+
+                          <div className="flex items-center gap-1">
+                            {event.status !== 'closed' && nominee.status !== 'approved' && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-emerald-600 hover:text-emerald-600 rounded-full"
+                                onClick={() => handleModerateNominee(nominee.id, category.id, 'approved')}
+                                disabled={moderatingId === nominee.id}
+                                title="Approve"
+                              >
+                                {moderatingId === nominee.id ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="w-3.5 h-3.5" />
+                                )}
+                              </Button>
+                            )}
+                            {event.status !== 'closed' && nominee.status !== 'rejected' && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-amber-600 hover:text-amber-600 rounded-full"
+                                onClick={() => handleModerateNominee(nominee.id, category.id, 'rejected')}
+                                disabled={moderatingId === nominee.id}
+                                title="Reject"
+                              >
+                                {moderatingId === nominee.id ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <XCircle className="w-3.5 h-3.5" />
+                                )}
+                              </Button>
+                            )}
+                            {event.status !== 'closed' && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-destructive hover:text-destructive rounded-full"
+                                onClick={() => handleDeleteNominee(nominee.id, category.id)}
+                                title="Delete"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>

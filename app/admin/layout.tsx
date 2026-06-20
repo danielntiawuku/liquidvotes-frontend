@@ -22,7 +22,6 @@ const navItems = [
   { href: '/admin/organizations', label: 'Organizations', icon: Building2 },
   { href: '/admin/events', label: 'Events', icon: Trophy },
   { href: '/admin/users', label: 'Users', icon: Users },
-  { href: '/admin/nominees', label: 'Nominees', icon: Trophy },
   { href: '/admin/payments', label: 'Payments', icon: DollarSign },
   { href: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
