@@ -22,7 +22,7 @@ export default function ContactPage() {
                 <Mail className="w-6 h-6 text-secondary flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">Email</h3>
-                  <p className="text-muted-foreground">support@awards.com</p>
+                  <p className="text-muted-foreground">danielntiawuku@gmail.com</p>
                   <p className="text-sm text-muted-foreground">Response time: 2 hours</p>
                 </div>
               </CardContent>
@@ -50,18 +50,7 @@ export default function ContactPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-6 flex gap-4">
-                <Clock className="w-6 h-6 text-secondary flex-shrink-0 mt-1" />
-                <div>
-                  <h3 className="font-semibold text-foreground mb-1">Live Chat</h3>
-                  <p className="text-muted-foreground">Available 24/7</p>
-                  <Button asChild variant="link" className="p-0 mt-1 h-auto">
-                    <Link href="#">Start chat</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+
           </div>
 
           {/* Contact Form */}
