@@ -43,7 +43,7 @@ export function HeroSection() {
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button size="lg" asChild className="gap-2 bg-secondary hover:bg-secondary/90 text-white shadow-lg hover:shadow-xl transition-all">
                 <Link href="/voter/assistant">
-                  Cast Your Vote <ArrowRight size={20} />
+                  Cast Your Vote
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="gap-2 border-2 border-primary text-primary hover:bg-primary/5">
