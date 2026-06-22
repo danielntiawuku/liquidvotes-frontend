@@ -12,9 +12,9 @@ export default function Footer() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-accent to-secondary rounded-lg flex items-center justify-center shadow-md">
-                <span className="text-white font-bold text-xs">AV</span>
+                <span className="text-white font-bold text-xs">LV</span>
               </div>
-              <h3 className="font-bold text-foreground text-lg">Awards</h3>
+              <h3 className="font-bold text-foreground text-lg">LiquidVotes</h3>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Modern platform for secure, transparent voting and recognition events with real-time analytics.
