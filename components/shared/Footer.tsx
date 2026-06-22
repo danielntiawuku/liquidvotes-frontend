@@ -83,7 +83,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-border/30 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-muted-foreground gap-6">
-          <p>&copy; 2024 Awards Voting Platform. All rights reserved.</p>
+          <p>&copy; 2024 LiquidVotes. All rights reserved.</p>
           <div className="flex gap-6">
             <Link href="#" className="hover:text-accent transition">
               Privacy Policy

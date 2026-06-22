@@ -51,7 +51,7 @@ export default function AssistantPage() {
           <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold shadow-md mb-2">
             V
           </div>
-          <p className="font-semibold text-foreground text-lg">VoteBot</p>
+          <p className="font-semibold text-foreground text-lg">Nessa</p>
           <p className="text-xs text-muted-foreground">
             {time ? `Today ${time}` : ''}
           </p>

@@ -1,4 +1,4 @@
-# Setup Guide - Awards Voting SaaS Platform
+# Setup Guide -  SaaS Platform
 
 This guide walks you through setting up the Awards Voting Platform frontend in your local development environment and preparing it for production deployment.
 
@@ -86,7 +86,7 @@ SUPABASE_SERVICE_KEY=your_service_key_here
 NEXT_PUBLIC_API_URL=http://localhost:3000
 
 # App Settings
-NEXT_PUBLIC_APP_NAME=Awards Voting
+NEXT_PUBLIC_APP_NAME=LiquidVotes
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 

@@ -6,7 +6,7 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${YELLOW}🔍 Awards Voting Platform - Installation Verification${NC}\n"
+echo -e "${YELLOW}🔍 LiquidVotes - Installation Verification${NC}\n"
 
 # Check Node version
 echo "Checking Node.js version..."

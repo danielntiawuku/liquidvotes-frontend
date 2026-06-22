@@ -1,4 +1,4 @@
-# Awards Voting SaaS Platform - Frontend
+#  SaaS Platform - Frontend
 
 A production-ready, multi-tenant SaaS platform for hosting, managing, and running secure online voting events for awards and recognition.
 
@@ -58,7 +58,7 @@ NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=your_paystack_key
 PAYSTACK_SECRET_KEY=your_paystack_secret
 
 # App Configuration
-NEXT_PUBLIC_APP_NAME=Awards Voting
+NEXT_PUBLIC_APP_NAME=LiquidVotes
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
