@@ -33,7 +33,7 @@ export default function ContactPage() {
                 <Phone className="w-6 h-6 text-secondary flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">Phone</h3>
-                  <p className="text-muted-foreground">+233 55-123-4567</p>
+                  <p className="text-muted-foreground">+233 55-033-2159</p>
                   <p className="text-sm text-muted-foreground">Mon-Fri, 9am-6pm EST</p>
                 </div>
               </CardContent>
