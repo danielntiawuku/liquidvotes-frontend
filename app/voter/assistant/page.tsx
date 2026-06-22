@@ -49,7 +49,7 @@ export default function AssistantPage() {
         {/* Avatar + name */}
         <div className="flex flex-col items-center mb-6">
           <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold shadow-md mb-2">
-            V
+            N
           </div>
           <p className="font-semibold text-foreground text-lg">Nessa</p>
           <p className="text-xs text-muted-foreground">

@@ -33,7 +33,7 @@ export default function ContactPage() {
                 <Phone className="w-6 h-6 text-secondary flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">Phone</h3>
-                  <p className="text-muted-foreground">+1 (555) 123-4567</p>
+                  <p className="text-muted-foreground">+233 55-123-4567</p>
                   <p className="text-sm text-muted-foreground">Mon-Fri, 9am-6pm EST</p>
                 </div>
               </CardContent>
@@ -44,8 +44,8 @@ export default function ContactPage() {
                 <MapPin className="w-6 h-6 text-secondary flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">Office</h3>
-                  <p className="text-muted-foreground">123 Tech Street</p>
-                  <p className="text-muted-foreground">San Francisco, CA 94105</p>
+                  <p className="text-muted-foreground">Mensvic Road</p>
+                  <p className="text-muted-foreground">East Legon, Accra</p>
                 </div>
               </CardContent>
             </Card>
