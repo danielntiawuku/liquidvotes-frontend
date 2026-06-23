@@ -90,6 +90,9 @@ export const eventsApi = {
   close: (id: string) =>
     api.post(`/events/${id}/close`),
 
+  reopenEvent: (id: string) =>
+    api.post(`/events/${id}/reopen`),
+
   getMine: () =>
     api.get('/events/mine'),
 }

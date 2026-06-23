@@ -217,7 +217,7 @@ export default function OrganizerEventsPage() {
                       Share
                     </Button>
                   </Link>
-                  {event.status === 'draft' && (
+                  {(event.status === 'draft' || event.status === 'closed') && (
                     <Button
                       size="sm"
                       variant="outline"

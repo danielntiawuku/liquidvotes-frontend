@@ -16,6 +16,7 @@ import {
   Send,
   Calendar,
   Lock,
+  Unlock,
   Vote,
   Wallet,
   Tag,
@@ -95,6 +96,7 @@ export default function EventPage({
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [closing, setClosing] = useState(false)
+  const [reopening, setReopening] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -130,7 +132,7 @@ export default function EventPage({
   }
 
   const handleClose = async () => {
-    if (!confirm('Close voting for this event? This cannot be undone.')) return
+    if (!confirm('Close voting for this event? You can reopen it at any time.')) return
     setClosing(true)
     try {
       await eventsApi.close(eventId)
@@ -139,6 +141,19 @@ export default function EventPage({
       alert(err?.response?.data?.message || 'Failed to close event.')
     } finally {
       setClosing(false)
+    }
+  }
+
+  const handleReopen = async () => {
+    if (!confirm('Reopen this event? Voting will resume immediately.')) return
+    setReopening(true)
+    try {
+      await eventsApi.reopenEvent(eventId)
+      setEvent((prev) => prev ? { ...prev, status: 'published' } : prev)
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Failed to reopen event.')
+    } finally {
+      setReopening(false)
     }
   }
 
@@ -226,6 +241,17 @@ export default function EventPage({
               Close Voting
             </Button>
           )}
+          {event.status === 'closed' && (
+            <Button
+              onClick={handleReopen}
+              disabled={reopening}
+              className="gap-2 shadow-md"
+              style={{ backgroundImage: 'linear-gradient(135deg, #10b981, #14b8a6)' }}
+            >
+              {reopening ? <Loader2 className="w-4 h-4 animate-spin" /> : <Unlock className="w-4 h-4" />}
+              Reopen Voting
+            </Button>
+          )}
         </div>
       </div>
 
@@ -259,7 +285,7 @@ export default function EventPage({
           <Card key={stat.label} className="border-border/60 hover:shadow-md transition-shadow">
             <CardContent className="pt-5 pb-5">
               <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${stat.gradient} flex items-center justify-center mb-3 shadow-sm`}>
-                <stat.icon className="w-4.5 h-4.5 text-white" />
+                <stat.icon className="w-4 h-4 text-white" />
               </div>
               <p className="text-sm text-muted-foreground">{stat.label}</p>
               <p className="text-2xl font-bold text-foreground mt-1">{stat.value}</p>
