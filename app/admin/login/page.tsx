@@ -6,10 +6,16 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { authApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { ShieldCheck } from 'lucide-react'
 
 export default function AdminLoginPage() {
   const router = useRouter()
+
+  // Warm up the backend on page load so a sleeping Render instance has time
+  // to boot before the admin logs in.
+  useWarmUp()
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({

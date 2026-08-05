@@ -15,6 +15,7 @@ import {
   FileText,
   LifeBuoy,
   CreditCard,
+  Wallet,
 } from 'lucide-react'
 
 const navItems = [
@@ -23,6 +24,7 @@ const navItems = [
   { href: '/admin/events', label: 'Events', icon: Trophy },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/payments', label: 'Payments', icon: DollarSign },
+  { href: '/admin/withdrawals', label: 'Withdrawals', icon: Wallet },
   { href: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
   { href: '/admin/audit-logs', label: 'Audit Logs', icon: FileText },

@@ -4,10 +4,18 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
 
 export const api = axios.create({
   baseURL: BASE_URL,
+  // 30s per attempt — a sleeping Render free instance can take ~30-60s to cold-start
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
 })
+
+// Fire-and-forget ping to /health that wakes a sleeping Render free instance
+// so it has time to cold-start before the voter's real request arrives.
+export function warmUpBackend() {
+  api.get('/health').catch(() => {})
+}
 
 // Automatically attach auth token to every request
 api.interceptors.request.use((config) => {
@@ -23,7 +31,23 @@ api.interceptors.request.use((config) => {
 // Handle global response errors
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const config = error.config
+    const method = String(config?.method ?? '').toLowerCase()
+    const isNetworkFailure = !error.response
+    // Only auto-retry idempotent methods (GET/HEAD/OPTIONS/PUT/DELETE) so that
+    // a retried request can't create duplicate records (e.g. double payments).
+    const isIdempotent = ['get', 'head', 'options', 'put', 'delete'].includes(method)
+
+    // Retry ONCE on timeouts / network failures (e.g. backend cold start).
+    // Never retry HTTP error responses, and never auto-retry POST requests
+    // (e.g. payment initiation) to avoid creating duplicate records.
+    if (config && !config._retried && isNetworkFailure && isIdempotent) {
+      config._retried = true
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      return api(config)
+    }
+
     const status = error.response?.status
 
     if (status === 401) {
@@ -241,6 +265,18 @@ export const adminApi = {
 
   getPayments: () =>
     api.get('/admin/payments'),
+
+  getWithdrawals: () =>
+    api.get('/admin/withdrawals'),
+
+  approveWithdrawal: (id: string) =>
+    api.post(`/admin/withdrawals/${id}/approve`),
+
+  markWithdrawalPaid: (id: string, reference: string) =>
+    api.post(`/admin/withdrawals/${id}/mark-paid`, { reference }),
+
+  rejectWithdrawal: (id: string, reason: string) =>
+    api.post(`/admin/withdrawals/${id}/reject`, { reason }),
 
   getSubscriptions: () =>
     api.get('/admin/subscriptions'),

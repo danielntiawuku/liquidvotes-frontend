@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { nomineesApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { ArrowRight, ShieldCheck } from 'lucide-react'
 
 export default function AssistantPage() {
@@ -17,6 +18,10 @@ export default function AssistantPage() {
   useEffect(() => {
     setTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
   }, [])
+
+  // Warm up the backend on page load so a sleeping Render instance has time to
+  // boot before the voter submits a code — prevents the infinite spinner.
+  useWarmUp()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

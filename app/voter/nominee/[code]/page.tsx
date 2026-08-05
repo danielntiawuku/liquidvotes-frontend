@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { nomineesApi, paymentsApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { ArrowLeft, Loader2, Trophy, Calendar, Minus, Plus } from 'lucide-react'
 
 interface Nominee {
@@ -55,6 +56,10 @@ export default function NomineePage({
   const [quantity, setQuantity] = useState(1)
   const [paying, setPaying] = useState(false)
   const [formError, setFormError] = useState('')
+
+  // Warm up the backend on page load so a sleeping Render instance has time
+  // to boot before the nominee lookup + leaderboard requests arrive.
+  useWarmUp()
 
   useEffect(() => {
     const fetchData = async () => {

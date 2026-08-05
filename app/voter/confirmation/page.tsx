@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { paymentsApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { Check, Loader2, XCircle } from 'lucide-react'
 
 interface Receipt {
@@ -40,6 +41,10 @@ function ConfirmationContent() {
   const [receipt, setReceipt] = useState<Receipt | null>(null)
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState<'success' | 'failed' | 'pending'>('pending')
+
+  // Warm up the backend so the payment verification + receipt requests find a
+  // warm server instead of hanging on a cold start.
+  useWarmUp()
 
   useEffect(() => {
     if (!reference) {

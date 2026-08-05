@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { adminApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { Search, Loader2, Calendar } from 'lucide-react'
 
 interface Subscription {
@@ -34,6 +35,9 @@ export default function AdminSubscriptionsPage() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<'all' | 'free' | 'basic' | 'pro' | 'enterprise'>('all')
+
+  // Warm up the backend so the subscriptions request finds a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchSubscriptions = async () => {

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { nomineesApi, paymentsApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { ArrowRight, Minus, Plus, Loader2 } from 'lucide-react'
 
 interface Nominee {
@@ -36,6 +37,10 @@ function CheckoutContent() {
   const [loading, setLoading] = useState(true)
   const [paying, setPaying] = useState(false)
   const [error, setError] = useState('')
+
+  // Warm up the backend on page load so a sleeping Render instance has time
+  // to boot before the voter completes checkout.
+  useWarmUp()
 
   useEffect(() => {
     if (!code) {

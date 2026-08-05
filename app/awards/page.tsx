@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { eventsApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { Search, Loader2, Trophy, Calendar, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
@@ -34,6 +35,10 @@ export default function AwardsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+
+  // Warm up the backend on page load so a sleeping Render instance has time
+  // to boot before the voter starts browsing awards.
+  useWarmUp()
 
   useEffect(() => {
     const fetchEvents = async () => {

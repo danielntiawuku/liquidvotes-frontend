@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { ImageUpload } from '@/components/shared/ImageUpload'
 import { eventsApi, categoriesApi, nomineesApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import {
   ArrowLeft,
   Plus,
@@ -85,6 +86,9 @@ export default function EventDetailsPage({
 
   // Moderating nominee
   const [moderatingId, setModeratingId] = useState<string | null>(null)
+
+  // Warm up the backend so the event + categories + nominees requests find a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchEvent = async () => {

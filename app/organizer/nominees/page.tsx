@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { eventsApi, nomineesApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { Search, Trash2, Loader2, Trophy, Users } from 'lucide-react'
 import Link from 'next/link'
 
@@ -47,6 +48,9 @@ export default function NomineesManagementPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [error, setError] = useState('')
+
+  // Warm up the backend so the events + nominees requests find a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchEvents = async () => {

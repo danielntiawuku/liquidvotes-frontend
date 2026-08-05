@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { adminApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { Search, Loader2, AlertCircle, Shield } from 'lucide-react'
 
 interface AuditLog {
@@ -30,6 +31,9 @@ export default function AdminAuditLogsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+
+  // Warm up the backend so the audit logs request finds a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchLogs = async () => {

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { adminApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import {
   Search,
   Loader2,
@@ -60,6 +61,9 @@ export default function AdminEventsPage() {
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [rejectingId, setRejectingId] = useState<string | null>(null)
   const [rejectionReason, setRejectionReason] = useState('')
+
+  // Warm up the backend so the events list request finds a warm server.
+  useWarmUp()
 
   const fetchEvents = async () => {
     try {

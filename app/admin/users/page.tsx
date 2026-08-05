@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { adminApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { Search, Loader2, Trash2, UserCircle } from 'lucide-react'
 
 interface User {
@@ -32,6 +33,9 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<'all' | 'voter' | 'organizer' | 'admin'>('all')
   const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  // Warm up the backend so the users list request finds a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchUsers = async () => {

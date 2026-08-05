@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react'
 import { Navigation } from '@/components/shared/Navigation'
 import Footer from '@/components/shared/Footer'
 import { eventsApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { Loader2, ArrowLeft, ArrowRight, Trophy } from 'lucide-react'
 import Link from 'next/link'
 
@@ -40,6 +41,9 @@ export default function CategoryNomineesPage({
   const [category, setCategory] = useState<Category | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  // Warm up the backend so the event + category + nominees requests find a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchEvent = async () => {

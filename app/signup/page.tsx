@@ -8,9 +8,15 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { authApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 
 export default function SignupPage() {
   const router = useRouter()
+
+  // Warm up the backend on page load so a sleeping Render instance has time
+  // to boot before the user submits the signup form.
+  useWarmUp()
+
   const [userType, setUserType] = useState<'voter' | 'organizer'>('voter')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')

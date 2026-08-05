@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { eventsApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import {
   Plus,
   Calendar,
@@ -53,6 +54,9 @@ export default function OrganizerEventsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  // Warm up the backend so the events list request finds a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchEvents = async () => {

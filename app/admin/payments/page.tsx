@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { adminApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { Search, Loader2 } from 'lucide-react'
 
 interface Payment {
@@ -44,6 +45,9 @@ export default function AdminPaymentsPage() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<'all' | 'success' | 'pending' | 'failed'>('all')
+
+  // Warm up the backend so the payments list request finds a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchPayments = async () => {

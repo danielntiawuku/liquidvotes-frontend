@@ -5,6 +5,7 @@ import { Navigation } from '@/components/shared/Navigation'
 import Footer from '@/components/shared/Footer'
 import { Badge } from '@/components/ui/badge'
 import { eventsApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { Loader2, Trophy, ArrowLeft, ArrowRight, Users } from 'lucide-react'
 import Link from 'next/link'
 
@@ -38,6 +39,9 @@ export default function EventCategoriesPage({
   const [event, setEvent] = useState<Event | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  // Warm up the backend on page load so the event lookup finds a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchEvent = async () => {

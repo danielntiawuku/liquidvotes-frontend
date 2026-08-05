@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { authApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -16,6 +17,10 @@ export default function LoginPage() {
     email: '',
     password: '',
   })
+
+  // Warm up the backend on page load so a sleeping Render instance has time
+  // to boot before the voter logs in.
+  useWarmUp()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target

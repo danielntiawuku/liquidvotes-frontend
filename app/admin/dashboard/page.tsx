@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { adminApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import {
   BarChart3,
   Users,
@@ -12,6 +13,7 @@ import {
   Building2,
   AlertCircle,
   DollarSign,
+  Wallet,
 } from 'lucide-react'
 
 interface Dashboard {
@@ -23,12 +25,17 @@ interface Dashboard {
   totalRevenue: number
   totalPlatformFees: number
   pendingTickets: number
+  pendingWithdrawals?: number
+  pendingWithdrawalAmount?: number
 }
 
 export default function AdminDashboardPage() {
   const [dashboard, setDashboard] = useState<Dashboard | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  // Warm up the backend so the dashboard request finds a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -141,7 +148,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Quick links */}
-      <div className="grid md:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
         <Card className="hover:shadow-sm transition">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -180,6 +187,29 @@ export default function AdminDashboardPage() {
               className="text-sm text-primary hover:underline font-medium"
             >
               View all payments
+            </a>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-sm transition">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Wallet className="w-4 h-4" />
+              Withdrawals
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-3">
+              {dashboard?.pendingWithdrawals
+                ? `${dashboard.pendingWithdrawals} payout request${dashboard.pendingWithdrawals > 1 ? 's' : ''} worth GHS ${(dashboard?.pendingWithdrawalAmount ?? 0).toFixed(2)} waiting.`
+                : 'No pending payouts. All withdrawal requests processed.'}
+            </p>
+
+            <a
+              href="/admin/withdrawals"
+              className="text-sm text-primary hover:underline font-medium"
+            >
+              Process withdrawals
             </a>
           </CardContent>
         </Card>

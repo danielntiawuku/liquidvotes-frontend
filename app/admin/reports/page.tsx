@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { adminApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { BarChart3, TrendingUp, Trophy, Loader2, DollarSign } from 'lucide-react'
 
 interface RevenueDay {
@@ -34,6 +35,9 @@ export default function AdminReportsPage() {
   const [reports, setReports] = useState<Reports | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  // Warm up the backend so the reports request finds a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchReports = async () => {

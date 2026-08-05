@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { adminApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { Search, Loader2, Building2, Calendar } from 'lucide-react'
 
 interface Organization {
@@ -38,6 +39,9 @@ export default function AdminOrganizationsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+
+  // Warm up the backend so the organizations list request finds a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchOrganizations = async () => {

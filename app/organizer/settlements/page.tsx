@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { organizerApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import {
   Wallet,
   Loader2,
@@ -79,6 +80,9 @@ export default function SettlementsPage() {
 
   // Show/hide account form
   const [showAccountForm, setShowAccountForm] = useState(false)
+
+  // Warm up the backend so the settlement data request finds a warm server.
+  useWarmUp()
 
   const fetchSettlements = async () => {
     try {
@@ -563,7 +567,12 @@ export default function SettlementsPage() {
                           {w.currency} {Number(w.amount).toFixed(2)}
                         </td>
                         <td className="py-3 px-4 text-muted-foreground">
-                          {w.accountDetails}
+                          <p>{w.accountDetails}</p>
+                          {w.note && (
+                            <p className="text-xs text-muted-foreground/70 mt-0.5 max-w-[260px] truncate">
+                              {w.note}
+                            </p>
+                          )}
                         </td>
                         <td className="py-3 px-4">
                           <Badge

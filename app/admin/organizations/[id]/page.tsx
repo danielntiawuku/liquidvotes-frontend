@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { adminApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import {
   ArrowLeft,
   Loader2,
@@ -91,6 +92,9 @@ export default function OrganizationDetailPage({
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [togglingSuspend, setTogglingSuspend] = useState(false)
+
+  // Warm up the backend so the organization detail request finds a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchOrg = async () => {

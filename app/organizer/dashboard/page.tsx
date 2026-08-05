@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { organizerApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import {
   Plus,
   BarChart3,
@@ -49,6 +50,9 @@ export default function OrganizerDashboardPage() {
   const [dashboard, setDashboard] = useState<Dashboard | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  // Warm up the backend so the dashboard request finds a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchDashboard = async () => {

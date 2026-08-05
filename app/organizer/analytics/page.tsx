@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { organizerApi, eventsApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { BarChart3, TrendingUp, Trophy, Loader2, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
@@ -53,6 +54,9 @@ function OrganizerAnalyticsContent() {
   const [loading, setLoading] = useState(false)
   const [eventsLoading, setEventsLoading] = useState(true)
   const [error, setError] = useState('')
+
+  // Warm up the backend so the events + analytics requests find a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchEvents = async () => {

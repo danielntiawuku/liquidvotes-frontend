@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { eventsApi, organizerApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { Trophy, Lock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -56,6 +57,9 @@ function WinnersContent() {
   const [publishing, setPublishing] = useState<string | null>(null)
   const [closing, setClosing] = useState<string | null>(null)
   const [error, setError] = useState('')
+
+  // Warm up the backend so the events + leaderboard requests find a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchEvents = async () => {

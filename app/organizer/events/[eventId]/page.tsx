@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { eventsApi, organizerApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import {
   Share2,
   BarChart3,
@@ -98,6 +99,9 @@ export default function EventPage({
   const [closing, setClosing] = useState(false)
   const [reopening, setReopening] = useState(false)
   const [error, setError] = useState('')
+
+  // Warm up the backend so the event + analytics requests find a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchData = async () => {

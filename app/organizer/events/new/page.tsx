@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { eventsApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { ChevronRight, Loader2 } from 'lucide-react'
 
 type WizardStep = 'basic' | 'details' | 'settings' | 'review'
@@ -26,6 +27,9 @@ export default function CreateEventPage() {
   const [currentStep, setCurrentStep] = useState<WizardStep>('basic')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Warm up the backend so the create-event flow finds a warm server.
+  useWarmUp()
 
   const {
     register,

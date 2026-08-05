@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { eventsApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { Copy, Check, QrCode, Link, Share2, Loader2 } from 'lucide-react'
 
 interface Nominee {
@@ -34,6 +35,9 @@ function ShareEventContent() {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [copiedUrl, setCopiedUrl] = useState(false)
   const [search, setSearch] = useState('')
+
+  // Warm up the backend so the events + nominees requests find a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchEvents = async () => {

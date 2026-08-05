@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { authApi, organizerApi } from '@/lib/api'
+import { useWarmUp } from '@/lib/hooks'
 import { Save, Building2, Mail, Phone, Globe, MapPin, Camera, Loader2, CheckCircle } from 'lucide-react'
 
 interface User {
@@ -38,6 +39,9 @@ export default function OrganizerProfilePage() {
     bio: '',
     organizationType: '',
   })
+
+  // Warm up the backend so the profile request finds a warm server.
+  useWarmUp()
 
   useEffect(() => {
     const fetchProfile = async () => {
