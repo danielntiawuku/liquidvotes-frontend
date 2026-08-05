@@ -1,5 +1,7 @@
 'use client'
 
+import { Navigation } from '@/components/shared/Navigation'
+import Footer from '@/components/shared/Footer'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -8,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 export default function HelpCenterPage() {
   return (
     <div className="min-h-screen bg-background pt-20 pb-20">
+      <Navigation />
       <div className="max-w-4xl mx-auto px-4">
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-primary mb-4">Help Center</h1>
@@ -147,6 +150,7 @@ export default function HelpCenterPage() {
           </CardContent>
         </Card>
       </div>
+      <Footer />
     </div>
   )
 }

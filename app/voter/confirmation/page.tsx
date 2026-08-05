@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { paymentsApi } from '@/lib/api'
 import { useWarmUp } from '@/lib/hooks'
-import { Check, Loader2, XCircle } from 'lucide-react'
+import { Check, Loader2, XCircle, Clock } from 'lucide-react'
 
 interface Receipt {
   id: string
@@ -46,36 +46,88 @@ function ConfirmationContent() {
   // warm server instead of hanging on a cold start.
   useWarmUp()
 
+  const MAX_POLL_ATTEMPTS = 6
+
+  // Returns true when the payment is still pending and we should keep checking.
+  const verifyPayment = useCallback(async () => {
+    if (!reference) return false
+    try {
+      const verifyResponse = await paymentsApi.verify(reference)
+      setStatus(verifyResponse.data.status)
+
+      if (verifyResponse.data.status === 'success') {
+        const receiptResponse = await paymentsApi.getReceipt(reference)
+        setReceipt(receiptResponse.data.payment)
+        return false
+      }
+
+      // 'pending' (delayed MoMo/bank/other channels) → keep polling; anything
+      // else (abandoned, failed, …) is a failure for display purposes.
+      if (verifyResponse.data.status === 'pending') return true
+      setStatus('failed')
+      return false
+    } catch {
+      setStatus('failed')
+      return false
+    }
+  }, [reference])
+
   useEffect(() => {
     if (!reference) {
       router.push('/voter/assistant')
       return
     }
 
-    const verifyPayment = async () => {
-      try {
-        const verifyResponse = await paymentsApi.verify(reference)
-        setStatus(verifyResponse.data.status)
+    let cancelled = false
+    let attempts = 0
 
-        if (verifyResponse.data.status === 'success') {
-          const receiptResponse = await paymentsApi.getReceipt(reference)
-          setReceipt(receiptResponse.data.payment)
-        }
-      } catch {
-        setStatus('failed')
-      } finally {
+    const poll = async () => {
+      const shouldRetry = await verifyPayment()
+      if (cancelled) return
+      if (shouldRetry && attempts < MAX_POLL_ATTEMPTS) {
+        attempts += 1
+        setTimeout(poll, 5000)
+      } else {
         setLoading(false)
       }
     }
 
-    verifyPayment()
-  }, [reference, router])
+    poll()
+
+    return () => {
+      cancelled = true
+    }
+  }, [reference, router, verifyPayment])
+
+  const handleCheckAgain = async () => {
+    setLoading(true)
+    await verifyPayment()
+    setLoading(false)
+  }
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
         <p className="text-muted-foreground">Confirming your payment...</p>
+      </div>
+    )
+  }
+
+  if (status === 'pending') {
+    return (
+      <div className="max-w-lg mx-auto py-12 text-center space-y-6">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/20 mb-2">
+          <Clock className="w-8 h-8 text-amber-600" />
+        </div>
+        <h1 className="text-2xl font-bold text-foreground">Payment Confirming</h1>
+        <p className="text-muted-foreground">
+          Your payment is still being confirmed. This can take a few minutes for
+          mobile money or bank transfers — we'll keep checking automatically.
+        </p>
+        <Button onClick={handleCheckAgain} variant="outline">
+          Check payment status
+        </Button>
       </div>
     )
   }

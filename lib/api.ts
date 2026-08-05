@@ -139,6 +139,9 @@ export const categoriesApi = {
 
   delete: (eventId: string, categoryId: string) =>
     api.delete(`/events/${eventId}/categories/${categoryId}`),
+
+  closeCategory: (eventId: string, categoryId: string) =>
+    api.post(`/events/${eventId}/categories/${categoryId}/close`),
 }
 
 // ============================================
@@ -174,7 +177,6 @@ export const paymentsApi = {
   initiate: (data: {
     nomineeId: string
     quantity: number
-    method: string
     email: string
     phone?: string
   }) => api.post('/payments/initiate', data),
@@ -187,14 +189,6 @@ export const paymentsApi = {
 
   getMyTransactions: () =>
     api.get('/payments/me'),
-}
-
-// ============================================
-// VOTES
-// ============================================
-export const votesApi = {
-  getByEvent: (eventId: string) =>
-    api.get(`/votes/event/${eventId}`),
 }
 
 // ============================================

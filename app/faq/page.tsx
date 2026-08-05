@@ -1,5 +1,7 @@
 'use client'
 
+import { Navigation } from '@/components/shared/Navigation'
+import Footer from '@/components/shared/Footer'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -34,6 +36,7 @@ export default function FAQPage() {
 
   return (
     <div className="min-h-screen bg-background pt-20 pb-20">
+      <Navigation />
       <div className="max-w-3xl mx-auto px-4">
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-primary mb-4">Frequently Asked Questions</h1>
@@ -61,6 +64,7 @@ export default function FAQPage() {
           </CardContent>
         </Card>
       </div>
+      <Footer />
     </div>
   )
 }

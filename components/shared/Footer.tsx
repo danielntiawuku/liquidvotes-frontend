@@ -48,12 +48,12 @@ export default function Footer() {
             <h4 className="font-semibold text-foreground mb-6 text-sm uppercase tracking-wider">Resources</h4>
             <ul className="space-y-3 text-sm">
               <li>
-                <Link href="#" className="text-muted-foreground hover:text-accent transition">
+                <Link href="/faq" className="text-muted-foreground hover:text-accent transition">
                   Documentation
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-muted-foreground hover:text-accent transition">
+                <Link href="/help" className="text-muted-foreground hover:text-accent transition">
                   Support
                 </Link>
               </li>
@@ -85,10 +85,10 @@ export default function Footer() {
         <div className="border-t border-border/30 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-muted-foreground gap-6">
           <p>&copy; 2024 LiquidVotes. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link href="#" className="hover:text-accent transition">
+            <Link href="/privacy" className="hover:text-accent transition">
               Privacy Policy
             </Link>
-            <Link href="#" className="hover:text-accent transition">
+            <Link href="/terms" className="hover:text-accent transition">
               Terms of Service
             </Link>
           </div>

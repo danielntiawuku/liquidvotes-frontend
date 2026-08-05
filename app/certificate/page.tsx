@@ -1,5 +1,7 @@
 'use client'
 
+import { Navigation } from '@/components/shared/Navigation'
+import Footer from '@/components/shared/Footer'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -7,7 +9,10 @@ import { Download, Share2 } from 'lucide-react'
 
 export default function CertificatePage() {
   return (
-    <div className="min-h-screen bg-background pt-20 pb-20 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-background">
+      <Navigation />
+
+      <section className="min-h-[70vh] pt-20 pb-20 flex flex-col items-center justify-center">
       <div className="max-w-4xl mx-auto px-4 w-full">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-primary mb-2">Certificate of Achievement</h1>
@@ -64,6 +69,9 @@ export default function CertificatePage() {
           </Button>
         </div>
       </div>
+      </section>
+
+      <Footer />
     </div>
   )
 }

@@ -1,5 +1,7 @@
 'use client'
 
+import { Navigation } from '@/components/shared/Navigation'
+import Footer from '@/components/shared/Footer'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,6 +11,7 @@ import { Edit2, Trash2, Plus } from 'lucide-react'
 export default function TeamPage() {
   return (
     <div className="min-h-screen bg-background pt-20 pb-20">
+      <Navigation />
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-between items-center mb-12">
           <div>
@@ -67,6 +70,7 @@ export default function TeamPage() {
           ))}
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

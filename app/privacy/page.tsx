@@ -1,8 +1,12 @@
 'use client'
 
+import { Navigation } from '@/components/shared/Navigation'
+import Footer from '@/components/shared/Footer'
+
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-background pt-20 pb-20">
+      <Navigation />
       <div className="max-w-3xl mx-auto px-4">
         <h1 className="text-4xl font-bold text-primary mb-4">Privacy Policy</h1>
         <p className="text-muted-foreground mb-12">Last updated: January 2024</p>
@@ -52,6 +56,7 @@ export default function PrivacyPage() {
           </section>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

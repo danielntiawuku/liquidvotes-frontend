@@ -36,7 +36,7 @@ interface Withdrawal {
   id: string
   amount: string
   currency: string
-  status: 'pending' | 'approved' | 'rejected'
+  status: 'pending' | 'processing' | 'approved' | 'rejected'
   payoutMethod: string
   accountDetails: string
   note: string | null
@@ -54,6 +54,7 @@ interface Summary {
 
 const statusColor = {
   pending: 'secondary',
+  processing: 'secondary',
   approved: 'default',
   rejected: 'destructive',
 } as const
@@ -64,7 +65,7 @@ export default function AdminWithdrawalsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
-  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
+  const [filter, setFilter] = useState<'all' | 'pending' | 'processing' | 'approved' | 'rejected'>('all')
 
   // Manual payout / reject inline forms
   const [actionFor, setActionFor] = useState<{ id: string; kind: 'pay' | 'reject' } | null>(null)
@@ -254,7 +255,7 @@ export default function AdminWithdrawalsPage() {
           />
         </div>
         <div className="flex gap-2">
-          {(['all', 'pending', 'approved', 'rejected'] as const).map((f) => (
+          {(['all', 'pending', 'processing', 'approved', 'rejected'] as const).map((f) => (
             <Button
               key={f}
               variant={filter === f ? 'default' : 'outline'}
@@ -324,22 +325,24 @@ export default function AdminWithdrawalsPage() {
                         </Badge>
                       </td>
                       <td className="py-3 px-4">
-                        {w.status === 'pending' && (
+                        {(w.status === 'pending' || w.status === 'processing') && (
                           <div className="flex gap-1.5">
-                            <Button
-                              size="sm"
-                              variant="default"
-                              className="gap-1.5"
-                              disabled={submittingId === w.id}
-                              onClick={() => handleApprove(w)}
-                            >
-                              {submittingId === w.id ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              ) : (
-                                <Send className="w-3.5 h-3.5" />
-                              )}
-                              Approve
-                            </Button>
+                            {w.status === 'pending' && (
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="gap-1.5"
+                                disabled={submittingId === w.id}
+                                onClick={() => handleApprove(w)}
+                              >
+                                {submittingId === w.id ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Send className="w-3.5 h-3.5" />
+                                )}
+                                Approve
+                              </Button>
+                            )}
                             <Button
                               size="sm"
                               variant="outline"
@@ -353,19 +356,21 @@ export default function AdminWithdrawalsPage() {
                               <HandCoins className="w-3.5 h-3.5" />
                               Mark Paid
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="gap-1.5 text-destructive hover:text-destructive"
-                              disabled={submittingId === w.id}
-                              onClick={() => {
-                                setActionFor({ id: w.id, kind: 'reject' })
-                                setActionError('')
-                              }}
-                            >
-                              <XCircle className="w-3.5 h-3.5" />
-                              Reject
-                            </Button>
+                            {w.status === 'pending' && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="gap-1.5 text-destructive hover:text-destructive"
+                                disabled={submittingId === w.id}
+                                onClick={() => {
+                                  setActionFor({ id: w.id, kind: 'reject' })
+                                  setActionError('')
+                                }}
+                              >
+                                <XCircle className="w-3.5 h-3.5" />
+                                Reject
+                              </Button>
+                            )}
                           </div>
                         )}
                       </td>
@@ -378,8 +383,17 @@ export default function AdminWithdrawalsPage() {
                           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <HandCoins className="w-4 h-4" />
-                              You're sending this money yourself (MoMo/bank). Enter the payment
-                              reference:
+                              {w.status === 'processing' ? (
+                                <span>
+                                  A Paystack transfer was initiated but never confirmed. Use this
+                                  only if the money didn't arrive — enter the payment reference:
+                                </span>
+                              ) : (
+                                <span>
+                                  You're sending this money yourself (MoMo/bank). Enter the payment
+                                  reference:
+                                </span>
+                              )}
                             </div>
                             <Input
                               value={reference}

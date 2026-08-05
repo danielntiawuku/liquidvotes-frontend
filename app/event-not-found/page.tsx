@@ -1,5 +1,7 @@
 'use client'
 
+import { Navigation } from '@/components/shared/Navigation'
+import Footer from '@/components/shared/Footer'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,7 +9,10 @@ import { AlertCircle, Download } from 'lucide-react'
 
 export default function EventNotFoundPage() {
   return (
-    <div className="min-h-screen bg-background pt-20 pb-20 flex items-center justify-center">
+    <div className="min-h-screen bg-background">
+      <Navigation />
+
+      <section className="min-h-[70vh] pt-20 pb-20 flex items-center justify-center">
       <div className="max-w-2xl mx-auto px-4">
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6">
@@ -56,6 +61,9 @@ export default function EventNotFoundPage() {
           </Button>
         </div>
       </div>
+      </section>
+
+      <Footer />
     </div>
   )
 }

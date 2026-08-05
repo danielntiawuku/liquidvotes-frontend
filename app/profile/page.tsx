@@ -1,5 +1,7 @@
 'use client'
 
+import { Navigation } from '@/components/shared/Navigation'
+import Footer from '@/components/shared/Footer'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,6 +11,7 @@ import { Mail, Lock, Bell, LogOut } from 'lucide-react'
 export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-background pt-20 pb-20">
+      <Navigation />
       <div className="max-w-4xl mx-auto px-4">
         <h1 className="text-4xl font-bold text-primary mb-12">Account Settings</h1>
 
@@ -123,6 +126,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

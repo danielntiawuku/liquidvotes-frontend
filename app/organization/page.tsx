@@ -1,5 +1,7 @@
 'use client'
 
+import { Navigation } from '@/components/shared/Navigation'
+import Footer from '@/components/shared/Footer'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,6 +11,7 @@ import { Edit2 } from 'lucide-react'
 export default function OrganizationPage() {
   return (
     <div className="min-h-screen bg-background pt-20 pb-20">
+      <Navigation />
       <div className="max-w-6xl mx-auto px-4">
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-primary mb-2">Organization Settings</h1>
@@ -118,6 +121,7 @@ export default function OrganizationPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

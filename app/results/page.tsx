@@ -32,7 +32,6 @@ interface ResultsNominee {
 interface CategoryResults {
   categoryId: string
   categoryName: string
-  categoryStatus: string
   winner: ResultsNominee | null
   ranking: ResultsNominee[]
 }

@@ -52,6 +52,7 @@ interface Settlements {
 
 const statusColor = {
   pending: 'secondary',
+  processing: 'secondary',
   approved: 'default',
   rejected: 'destructive',
 } as const
@@ -68,6 +69,7 @@ export default function SettlementsPage() {
   const [bankName, setBankName] = useState('')
   const [bankAccountName, setBankAccountName] = useState('')
   const [bankAccountNumber, setBankAccountNumber] = useState('')
+  const [bankCode, setBankCode] = useState('')
   const [savingAccount, setSavingAccount] = useState(false)
   const [savedAccount, setSavedAccount] = useState(false)
   const [accountError, setAccountError] = useState('')
@@ -98,6 +100,7 @@ export default function SettlementsPage() {
         setBankName(data.payoutAccount.bankName ?? '')
         setBankAccountName(data.payoutAccount.bankAccountName ?? '')
         setBankAccountNumber(data.payoutAccount.bankAccountNumber ?? '')
+        setBankCode(data.payoutAccount.bankCode ?? '')
       }
     } catch {
       setError('Failed to load settlement data.')
@@ -118,7 +121,7 @@ export default function SettlementsPage() {
         payoutMethod: method,
         ...(method === 'mobile_money'
           ? { mobileMoneyNumber: mobileNumber, mobileMoneyProvider: mobileProvider }
-          : { bankName, bankAccountName, bankAccountNumber }),
+          : { bankName, bankAccountName, bankAccountNumber, bankCode }),
       })
       setSavedAccount(true)
       setShowAccountForm(false)
@@ -347,6 +350,9 @@ export default function SettlementsPage() {
                       placeholder="e.g. 0244000000"
                       className="rounded-lg"
                     />
+                    <p className="text-xs text-muted-foreground">
+                      We automatically convert to international format (233…) for Paystack payouts.
+                    </p>
                   </div>
                 </div>
               )}
@@ -386,6 +392,21 @@ export default function SettlementsPage() {
                       placeholder="Account number"
                       className="rounded-lg"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">
+                      Bank Code <span className="text-muted-foreground font-normal">(Paystack)</span>
+                    </label>
+                    <Input
+                      value={bankCode}
+                      onChange={(e) => setBankCode(e.target.value)}
+                      placeholder="e.g. 030, 013"
+                      className="rounded-lg"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1.5">
+                      Required for automatic payouts — find your bank&apos;s code in the Paystack
+                      bank list. Without it, payouts are sent manually by the admin.
+                    </p>
                   </div>
                 </div>
               )}

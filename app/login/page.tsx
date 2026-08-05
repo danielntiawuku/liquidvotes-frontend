@@ -1,5 +1,7 @@
 'use client'
 
+import { Navigation } from '@/components/shared/Navigation'
+import Footer from '@/components/shared/Footer'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -64,7 +66,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+    <div className="min-h-screen bg-background">
+      <Navigation />
+
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Welcome Back</CardTitle>
@@ -132,6 +137,9 @@ export default function LoginPage() {
           </div>
         </CardContent>
       </Card>
+      </div>
+
+      <Footer />
     </div>
   )
 }

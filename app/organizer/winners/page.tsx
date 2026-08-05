@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { eventsApi, organizerApi } from '@/lib/api'
+import { eventsApi, organizerApi, categoriesApi } from '@/lib/api'
 import { useWarmUp } from '@/lib/hooks'
 import { Trophy, Lock, CheckCircle, AlertCircle, Loader2, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
@@ -172,10 +172,12 @@ function WinnersContent() {
   const handleCloseVoting = async (categoryId: string) => {
     setClosing(categoryId)
     try {
-      await eventsApi.close(selectedEventId)
+      // Close only this category so a winner can be published per category while
+      // voting continues for the rest of the event.
+      await categoriesApi.closeCategory(selectedEventId, categoryId)
       setCategories((prev) =>
         prev.map((cat) =>
-          cat.status === 'voting' ? { ...cat, status: 'closed' } : cat
+          cat.id === categoryId ? { ...cat, status: 'closed' } : cat
         )
       )
     } catch (err: any) {

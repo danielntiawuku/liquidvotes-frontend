@@ -115,7 +115,6 @@ export default function NomineePage({
       const response = await paymentsApi.initiate({
         nomineeId: nominee.id,
         quantity,
-        method: 'card',
         email: email.trim(),
       })
 

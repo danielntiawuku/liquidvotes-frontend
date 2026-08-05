@@ -1,5 +1,7 @@
 'use client'
 
+import { Navigation } from '@/components/shared/Navigation'
+import Footer from '@/components/shared/Footer'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -8,6 +10,7 @@ import { Copy, Eye, Trash2, Plus } from 'lucide-react'
 export default function APIKeysPage() {
   return (
     <div className="min-h-screen bg-background pt-20 pb-20">
+      <Navigation />
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-between items-center mb-12">
           <div>
@@ -73,6 +76,7 @@ export default function APIKeysPage() {
           ))}
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

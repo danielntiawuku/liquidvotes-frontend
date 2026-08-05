@@ -1,5 +1,7 @@
 'use client'
 
+import { Navigation } from '@/components/shared/Navigation'
+import Footer from '@/components/shared/Footer'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -8,6 +10,7 @@ import { Users, Target, Zap, Award } from 'lucide-react'
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background">
+      <Navigation />
       <div className="pt-20 pb-20">
         <div className="max-w-6xl mx-auto px-4 text-center mb-20">
           <h1 className="text-6xl font-bold text-primary mb-4">About Awards</h1>
@@ -73,6 +76,7 @@ export default function AboutPage() {
           </Button>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

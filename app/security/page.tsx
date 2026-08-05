@@ -1,5 +1,7 @@
 'use client'
 
+import { Navigation } from '@/components/shared/Navigation'
+import Footer from '@/components/shared/Footer'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -8,6 +10,7 @@ import { Lock, Smartphone, Shield } from 'lucide-react'
 export default function SecurityPage() {
   return (
     <div className="min-h-screen bg-background pt-20 pb-20">
+      <Navigation />
       <div className="max-w-4xl mx-auto px-4">
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-primary mb-2">Security Settings</h1>
@@ -112,6 +115,7 @@ export default function SecurityPage() {
           </Card>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

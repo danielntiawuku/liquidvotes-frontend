@@ -1,5 +1,7 @@
 'use client'
 
+import { Navigation } from '@/components/shared/Navigation'
+import Footer from '@/components/shared/Footer'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-background pt-20 pb-20">
+      <Navigation />
       <div className="max-w-4xl mx-auto px-4">
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-primary mb-2">Settings</h1>
@@ -100,6 +103,7 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }
