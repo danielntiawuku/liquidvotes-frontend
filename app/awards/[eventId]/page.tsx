@@ -110,15 +110,26 @@ export default function EventCategoriesPage({
           <div className="mb-10">
             <div className="flex items-center gap-3 mb-2 flex-wrap">
               <h1 className="text-3xl font-bold text-foreground">{event.name}</h1>
-              <Badge variant="default" className="capitalize">{event.status}</Badge>
+              <Badge
+                variant="default"
+                className={`capitalize ${
+                  event.status === 'closed'
+                    ? 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'
+                    : ''
+                }`}
+              >
+                {event.status === 'closed' ? 'Results Announced' : event.status}
+              </Badge>
             </div>
             <p className="text-sm text-primary font-medium mb-3">
               {event.organizer.organizationName ?? event.organizer.name}
             </p>
             <p className="text-muted-foreground max-w-2xl">{event.description}</p>
-            <p className="text-sm text-muted-foreground mt-3">
-              {event.currency} {Number(event.votePrice).toFixed(2)} per vote
-            </p>
+            {event.status !== 'closed' && (
+              <p className="text-sm text-muted-foreground mt-3">
+                {event.currency} {Number(event.votePrice).toFixed(2)} per vote
+              </p>
+            )}
           </div>
 
           {/* Categories */}
@@ -130,7 +141,7 @@ export default function EventCategoriesPage({
           ) : (
             <>
               <h2 className="text-lg font-semibold text-foreground mb-4">
-                Select a category to vote
+                {event.status === 'closed' ? 'View categories and results' : 'Select a category to vote'}
               </h2>
               <div className="grid md:grid-cols-2 gap-4">
                 {visibleCategories.map((category) => {

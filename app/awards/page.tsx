@@ -75,7 +75,7 @@ export default function AwardsPage() {
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-foreground mb-4">Browse Awards</h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Discover active voting events and support your favourite nominees
+              Discover voting events, support your favourite nominees, and see announced results
             </p>
           </div>
 
@@ -129,7 +129,11 @@ export default function AwardsPage() {
               {filtered.map((event) => (
                 <Link
                   key={event.id}
-                  href={`/awards/${event.id}`}
+                  href={
+                    event.status === 'closed'
+                      ? `/results?eventId=${event.id}`
+                      : `/awards/${event.id}`
+                  }
                   className="flex flex-col p-6 border border-border rounded-xl hover:border-primary hover:shadow-sm transition bg-card"
                 >
                   {/* Top */}
@@ -137,8 +141,15 @@ export default function AwardsPage() {
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <Trophy className="w-5 h-5 text-primary" />
                     </div>
-                    <Badge variant="default" className="capitalize">
-                      {event.status}
+                    <Badge
+                      variant="default"
+                      className={`capitalize ${
+                        event.status === 'closed'
+                          ? 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'
+                          : ''
+                      }`}
+                    >
+                      {event.status === 'closed' ? 'Results Announced' : event.status}
                     </Badge>
                   </div>
 
@@ -180,14 +191,18 @@ export default function AwardsPage() {
                   <div className="flex items-center justify-between pt-3 border-t border-border mt-auto">
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
-                      Ends {new Date(event.endDate).toLocaleDateString()}
+                      {event.status === 'closed'
+                        ? `Closed ${new Date(event.endDate).toLocaleDateString()}`
+                        : `Ends ${new Date(event.endDate).toLocaleDateString()}`}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-foreground">
-                        {event.currency} {Number(event.votePrice).toFixed(2)}/vote
-                      </span>
+                      {event.status !== 'closed' && (
+                        <span className="text-xs font-medium text-foreground">
+                          {event.currency} {Number(event.votePrice).toFixed(2)}/vote
+                        </span>
+                      )}
                       <Button size="sm" className="gap-1 h-7 text-xs" tabIndex={-1}>
-                        View
+                        {event.status === 'closed' ? 'Results' : 'View'}
                         <ArrowRight className="w-3 h-3" />
                       </Button>
                     </div>

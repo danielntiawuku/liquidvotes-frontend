@@ -23,6 +23,8 @@ import {
   Tag,
   Clock,
   AlertCircle,
+  Eye,
+  Check,
 } from 'lucide-react'
 
 interface Nominee {
@@ -52,6 +54,7 @@ interface Event {
   currency: string
   codePrefix: string
   rejectionReason: string | null
+  showLiveResults: 'full' | 'participants_only' | 'hidden'
   categories: {
     id: string
     name: string
@@ -99,6 +102,11 @@ export default function EventPage({
   const [closing, setClosing] = useState(false)
   const [reopening, setReopening] = useState(false)
   const [error, setError] = useState('')
+  const [savingResults, setSavingResults] = useState(false)
+  // Staged (unsaved) visibility selection for the preview — null = no change
+  const [stagedVisibility, setStagedVisibility] = useState<
+    'full' | 'participants_only' | 'hidden' | null
+  >(null)
 
   // Warm up the backend so the event + analytics requests find a warm server.
   useWarmUp()
@@ -161,6 +169,26 @@ export default function EventPage({
     }
   }
 
+  // Selecting an option only stages it — nothing is saved until the user
+  // confirms, so they can preview exactly what voters will see first.
+  const handlePreviewVisibility = (value: 'full' | 'participants_only' | 'hidden') => {
+    setStagedVisibility(value)
+  }
+
+  const handleSaveVisibility = async () => {
+    if (!stagedVisibility) return
+    setSavingResults(true)
+    try {
+      await eventsApi.update(eventId, { showLiveResults: stagedVisibility })
+      setEvent((prev) => prev ? { ...prev, showLiveResults: stagedVisibility! } : prev)
+      setStagedVisibility(null)
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Failed to update live results setting.')
+    } finally {
+      setSavingResults(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -183,6 +211,20 @@ export default function EventPage({
     { label: 'Categories', value: event.categories.length, icon: Tag, gradient: 'from-primary to-primary/60' },
     { label: 'Nominees', value: event.categories.reduce((s, c) => s + c.nominees.length, 0), icon: Trophy, gradient: 'from-secondary to-secondary/60' },
   ]
+
+  // Data for the voter preview — uses the real leaderboard (real nominees +
+  // vote counts) so organizers see exactly what voters will see.
+  const previewVisibility = stagedVisibility ?? event.showLiveResults
+  const previewCategory =
+    analytics?.leaderboard.find((c) => c.nominees.length > 0) ??
+    analytics?.leaderboard[0] ??
+    null
+  const previewNominees = previewCategory?.nominees ?? []
+  const previewSortedByVotes = [...previewNominees].sort((a, b) => b.votes - a.votes)
+  const previewTop3 = previewSortedByVotes.slice(0, 3)
+  const previewAlphabetical = [...previewNominees].sort((a, b) =>
+    a.name.localeCompare(b.name)
+  )
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
@@ -477,6 +519,213 @@ export default function EventPage({
                   </Button>
                 </Link>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Live results visibility */}
+          <Card className="border-border/60">
+            <CardHeader>
+              <CardTitle className="text-base">Live Results Visibility</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Control what voters see on the public nominee pages while voting is live. Select an
+                option to preview it before saving.
+              </p>
+              <p className="text-xs text-muted-foreground mb-4 bg-muted/50 border border-border/60 rounded-lg p-3">
+                Note: Once voting closes, full results with vote counts are always public on the
+                results page — this setting only applies while voting is live.
+              </p>
+
+              {/* Closed events show the Results Announced banner — no live results to control */}
+              {event.status === 'closed' ? (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border border-border/60">
+                  <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <p className="text-sm text-muted-foreground">
+                    Voting is closed — full results with vote counts are now public on the results
+                    page. This live-results setting will apply again when the event is reopened.
+                  </p>
+                </div>
+              ) : (
+              <>
+              {/* Option cards — staging only, no save yet */}
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[
+                  {
+                    value: 'full' as const,
+                    title: 'Show Full Results',
+                    desc: 'Voters see rankings with vote counts',
+                  },
+                  {
+                    value: 'participants_only' as const,
+                    title: 'Participants Only',
+                    desc: 'Voters see the nominees, but no rank or vote counts',
+                  },
+                  {
+                    value: 'hidden' as const,
+                    title: 'Hide Live Results',
+                    desc: 'No live results card shown to voters',
+                  },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    disabled={savingResults}
+                    onClick={() => handlePreviewVisibility(option.value)}
+                    className={`text-left p-4 rounded-xl border transition ${
+                      previewVisibility === option.value
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                        : 'border-border hover:border-primary/40 bg-card'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-foreground">{option.title}</p>
+                      {(event.showLiveResults === option.value ||
+                        (stagedVisibility && stagedVisibility === option.value)) && (
+                        <Check className="w-3.5 h-3.5 text-primary" />
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">{option.desc}</p>
+                  </button>
+                ))}
+              </div>
+
+              {/* Unsaved change indicator */}
+              {stagedVisibility && stagedVisibility !== event.showLiveResults && (
+                <div className="mt-4 flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60">
+                  <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                  <p className="text-sm text-amber-800 dark:text-amber-400">
+                    You have unsaved changes. Save to apply them to voters.
+                  </p>
+                </div>
+              )}
+
+              {/* Voter preview — only meaningful while voting is live (this branch is for non-closed events) */}
+              <div className="mt-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Eye className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-sm font-medium text-foreground">
+                    Voter preview
+                  </p>
+                  <span className="text-xs text-muted-foreground">
+                    · how the live results card looks on the nominee page
+                  </span>
+                </div>
+
+                <div className="rounded-xl border-2 border-dashed border-border p-5 bg-muted/20">
+                  {previewVisibility === 'hidden' ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                        <Eye className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <p className="text-sm font-medium text-foreground">No live results card</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Voters won't see any live results on the nominee pages.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="max-w-sm mx-auto">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm font-semibold text-foreground">
+                          {previewCategory?.categoryName ?? 'Category'} — Live Results
+                        </p>
+                        {previewVisibility === 'participants_only' && (
+                          <span className="text-[10px] uppercase tracking-wide text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                            Counts hidden
+                          </span>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        {previewNominees.length === 0 ? (
+                          <p className="text-sm text-muted-foreground text-center py-3">
+                            {previewVisibility === 'participants_only'
+                              ? 'No participants yet'
+                              : 'No votes yet — be the first!'}
+                          </p>
+                        ) : previewVisibility === 'participants_only' ? (
+                          <>
+                            {previewAlphabetical.map((nominee) => (
+                              <div
+                                key={nominee.id}
+                                className="flex items-center justify-between p-2 rounded-lg bg-card border border-border/60 text-sm"
+                              >
+                                <span className="text-foreground">{nominee.name}</span>
+                              </div>
+                            ))}
+                            <p className="text-xs text-muted-foreground text-center pt-1">
+                              Vote counts are hidden
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            {previewTop3.map((nominee, index) => (
+                              <div
+                                key={nominee.id}
+                                className="flex items-center justify-between p-2 rounded-lg bg-card border border-border/60 text-sm"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                                    index === 0
+                                      ? 'bg-yellow-400 text-yellow-900'
+                                      : 'bg-muted text-muted-foreground'
+                                  }`}>
+                                    {index + 1}
+                                  </span>
+                                  <span className="text-foreground">{nominee.name}</span>
+                                </div>
+                                <span className="font-medium text-foreground">
+                                  {nominee.votes.toLocaleString()}
+                                </span>
+                              </div>
+                            ))}
+                            {previewSortedByVotes.length > 3 && (
+                              <p className="text-center text-xs text-muted-foreground py-1">
+                                ⋯
+                              </p>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Save / cancel actions */}
+              <div className="flex items-center gap-3 mt-5">
+                <Button
+                  onClick={handleSaveVisibility}
+                  disabled={!stagedVisibility || stagedVisibility === event.showLiveResults || savingResults}
+                  className="gap-2"
+                >
+                  {savingResults ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Check className="w-4 h-4" />
+                  )}
+                  {savingResults ? 'Saving…' : 'Save Changes'}
+                </Button>
+                {stagedVisibility && stagedVisibility !== event.showLiveResults && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => setStagedVisibility(null)}
+                    disabled={savingResults}
+                  >
+                    Cancel
+                  </Button>
+                )}
+                {!stagedVisibility && (
+                  <p className="text-xs text-muted-foreground">
+                    {event.showLiveResults === 'full'
+                      ? 'Currently: Show Full Results'
+                      : event.showLiveResults === 'participants_only'
+                        ? 'Currently: Participants Only'
+                        : 'Currently: Hide Live Results'}
+                  </p>
+                )}
+              </div>
+              </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

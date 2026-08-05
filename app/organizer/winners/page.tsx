@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { eventsApi, organizerApi } from '@/lib/api'
 import { useWarmUp } from '@/lib/hooks'
-import { Trophy, Lock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { Trophy, Lock, CheckCircle, AlertCircle, Loader2, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 
 interface Nominee {
@@ -204,17 +204,31 @@ function WinnersContent() {
             Close voting, select winners, and publish results
           </p>
         </div>
-        {events.length > 1 && (
-          <select
-            value={selectedEventId}
-            onChange={(e) => setSelectedEventId(e.target.value)}
-            className="border border-input bg-background rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-          >
-            {events.map((e) => (
-              <option key={e.id} value={e.id}>{e.name}</option>
-            ))}
-          </select>
-        )}
+        <div className="flex items-center gap-3">
+          {events.length > 1 && (
+            <select
+              value={selectedEventId}
+              onChange={(e) => setSelectedEventId(e.target.value)}
+              className="border border-input bg-background rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              {events.map((e) => (
+                <option key={e.id} value={e.id}>{e.name}</option>
+              ))}
+            </select>
+          )}
+          {selectedEventId && (
+            <Link
+              href={`/results?eventId=${selectedEventId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline" className="gap-1.5">
+                <ExternalLink className="w-4 h-4" />
+                View Results
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Error */}
@@ -395,9 +409,19 @@ function WinnersContent() {
                     {category.status === 'winner_published' && selectedWinner && (
                       <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950/20 border border-green-300 rounded-lg">
                         <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-                        <p className="text-sm text-foreground">
+                        <p className="text-sm text-foreground flex-1">
                           <strong>{selectedWinner.name}</strong> has been published as the winner.
                         </p>
+                        <Link
+                          href={`/results?eventId=${selectedEventId}&category=${category.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button size="sm" variant="outline" className="gap-1.5 flex-shrink-0">
+                            <ExternalLink className="w-3.5 h-3.5" />
+                            View Results
+                          </Button>
+                        </Link>
                       </div>
                     )}
                   </CardContent>

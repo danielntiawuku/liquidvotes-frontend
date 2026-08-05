@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
-import { organizerApi } from '@/lib/api'
+import { organizerApi, eventsApi } from '@/lib/api'
 import { useWarmUp } from '@/lib/hooks'
 import {
   Plus,
@@ -23,13 +23,14 @@ import {
 interface Event {
   id: string
   name: string
-  status: 'draft' | 'published' | 'closed'
+  status: 'draft' | 'pending_review' | 'published' | 'closed'
   startDate: string
   endDate: string
   votePrice: string
   revenue: number
   categoriesCount: number
   nomineesCount: number
+  showLiveResults: 'full' | 'participants_only' | 'hidden'
 }
 
 interface Dashboard {
@@ -42,14 +43,25 @@ interface Dashboard {
 
 const statusColor = {
   draft: 'secondary',
+  pending_review: 'secondary',
   published: 'default',
   closed: 'secondary',
 } as const
+
+const RESULTS_OPTIONS: {
+  value: 'full' | 'participants_only' | 'hidden'
+  label: string
+}[] = [
+  { value: 'full', label: 'Full' },
+  { value: 'participants_only', label: 'Participants' },
+  { value: 'hidden', label: 'Hidden' },
+]
 
 export default function OrganizerDashboardPage() {
   const [dashboard, setDashboard] = useState<Dashboard | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [savingResultsId, setSavingResultsId] = useState<string | null>(null)
 
   // Warm up the backend so the dashboard request finds a warm server.
   useWarmUp()
@@ -68,6 +80,27 @@ export default function OrganizerDashboardPage() {
 
     fetchDashboard()
   }, [])
+
+  const handleResultsChange = async (eventId: string, value: 'full' | 'participants_only' | 'hidden') => {
+    setSavingResultsId(eventId)
+    try {
+      await eventsApi.update(eventId, { showLiveResults: value })
+      setDashboard((prev) =>
+        prev
+          ? {
+              ...prev,
+              events: prev.events.map((e) =>
+                e.id === eventId ? { ...e, showLiveResults: value } : e
+              ),
+            }
+          : prev
+      )
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Failed to update live results.')
+    } finally {
+      setSavingResultsId(null)
+    }
+  }
 
   if (loading) {
     return (
@@ -221,7 +254,42 @@ export default function OrganizerDashboardPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-6 flex-shrink-0">
+                  <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0">
+                    <div className="hidden md:block">
+                      <p className="text-[11px] text-muted-foreground mb-1">
+                        Live results
+                        {savingResultsId === event.id && (
+                          <Loader2 className="w-3 h-3 animate-spin inline ml-1 text-primary" />
+                        )}
+                      </p>
+                      <div
+                        className={`flex items-center gap-1 p-0.5 rounded-lg bg-muted/60 border border-border/60 ${
+                          event.status === 'closed' ? 'opacity-50' : ''
+                        }`}
+                        title={
+                          event.status === 'closed'
+                            ? 'Closed events keep their current setting'
+                            : undefined
+                        }
+                      >
+                        {RESULTS_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            disabled={savingResultsId === event.id || event.status === 'closed'}
+                            onClick={() => handleResultsChange(event.id, opt.value)}
+                            className={`px-2 py-1 text-xs rounded-md transition ${
+                              event.showLiveResults === opt.value
+                                ? 'bg-background text-foreground font-semibold shadow-sm'
+                                : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                            title={`Live results: ${opt.label}`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     <div className="text-right hidden sm:block">
                       <p className="text-sm font-bold text-foreground">
                         GHS {event.revenue.toFixed(2)}

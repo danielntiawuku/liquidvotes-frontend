@@ -5,6 +5,7 @@ import { Navigation } from '@/components/shared/Navigation'
 import Footer from '@/components/shared/Footer'
 import { eventsApi } from '@/lib/api'
 import { useWarmUp } from '@/lib/hooks'
+import { Badge } from '@/components/ui/badge'
 import { Loader2, ArrowLeft, ArrowRight, Trophy } from 'lucide-react'
 import Link from 'next/link'
 
@@ -15,6 +16,7 @@ interface Nominee {
   bio: string | null
   photoUrl: string | null
   status: string
+  isWinner: boolean
 }
 
 interface Category {
@@ -28,6 +30,7 @@ interface Event {
   name: string
   currency: string
   votePrice: string
+  status: string
   categories: Category[]
 }
 
@@ -120,7 +123,9 @@ export default function CategoryNomineesPage({
           <div className="mb-10">
             <h1 className="text-3xl font-bold text-foreground mb-1">{category.name}</h1>
             <p className="text-muted-foreground">
-              {event.name} · {event.currency} {Number(event.votePrice).toFixed(2)} per vote
+              {event.name}
+              {event.status !== 'closed' &&
+                ` · ${event.currency} ${Number(event.votePrice).toFixed(2)} per vote`}
             </p>
           </div>
 
@@ -136,9 +141,15 @@ export default function CategoryNomineesPage({
                 <Link
                   key={nominee.id}
                   href={`/voter/nominee/${nominee.code}`}
-                  className="flex flex-col p-5 border border-border rounded-xl hover:border-primary hover:shadow-sm transition bg-card"
+                  className={`flex flex-col p-5 border rounded-xl hover:shadow-sm transition bg-card ${
+                    nominee.isWinner
+                      ? 'border-yellow-400 dark:border-yellow-600 ring-1 ring-yellow-400/30'
+                      : 'border-border hover:border-primary'
+                  }`}
                 >
-                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl mb-4 overflow-hidden">
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center text-primary font-bold text-xl mb-4 overflow-hidden ${
+                    nominee.isWinner ? 'bg-yellow-100 dark:bg-yellow-900/30 ring-2 ring-yellow-400' : 'bg-primary/10'
+                  }`}>
                     {nominee.photoUrl ? (
                       <img
                         src={nominee.photoUrl}
@@ -150,7 +161,15 @@ export default function CategoryNomineesPage({
                     )}
                   </div>
 
-                  <h3 className="font-semibold text-foreground mb-1">{nominee.name}</h3>
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <h3 className="font-semibold text-foreground">{nominee.name}</h3>
+                    {nominee.isWinner && (
+                      <Badge className="gap-1 bg-yellow-400 text-yellow-900 border-yellow-400 flex-shrink-0">
+                        <Trophy className="w-3 h-3" />
+                        Winner
+                      </Badge>
+                    )}
+                  </div>
 
                   {nominee.bio && (
                     <p className="text-sm text-muted-foreground mb-4 line-clamp-3 flex-1">

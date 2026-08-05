@@ -99,6 +99,9 @@ export const eventsApi = {
   getById: (id: string) =>
     api.get(`/events/${id}`),
 
+  getResults: (id: string) =>
+    api.get(`/events/${id}/results`),
+
   create: (data: object) =>
     api.post('/events', data),
 

@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { nomineesApi, paymentsApi } from '@/lib/api'
 import { useWarmUp } from '@/lib/hooks'
-import { ArrowLeft, Loader2, Trophy, Calendar, Minus, Plus } from 'lucide-react'
+import { ArrowLeft, Loader2, Trophy, Calendar, Minus, Plus, Lock, CheckCircle2 } from 'lucide-react'
 
 interface Nominee {
   id: string
@@ -27,6 +27,7 @@ interface Nominee {
       currency: string
       status: string
       endDate: string
+      showLiveResults: 'full' | 'participants_only' | 'hidden'
     }
   }
 }
@@ -36,7 +37,7 @@ interface LeaderboardEntry {
   name: string
   code: string
   isWinner: boolean
-  votes: number
+  votes: number | null
 }
 
 export default function NomineePage({
@@ -56,6 +57,9 @@ export default function NomineePage({
   const [quantity, setQuantity] = useState(1)
   const [paying, setPaying] = useState(false)
   const [formError, setFormError] = useState('')
+  const [resultsVisibility, setResultsVisibility] = useState<
+    'full' | 'participants_only' | 'hidden'
+  >('full')
 
   // Warm up the backend on page load so a sleeping Render instance has time
   // to boot before the nominee lookup + leaderboard requests arrive.
@@ -67,11 +71,19 @@ export default function NomineePage({
         const nomineeResponse = await nomineesApi.getByCode(code)
         const fetchedNominee = nomineeResponse.data.nominee
         setNominee(fetchedNominee)
+        setResultsVisibility(fetchedNominee.category.event.showLiveResults || 'full')
 
-        const leaderboardResponse = await nomineesApi.getLeaderboard(
-          fetchedNominee.category.id
-        )
-        setLeaderboard(leaderboardResponse.data.leaderboard)
+        // Live leaderboard is only needed while voting is open — closed events
+        // show the results-announced banner instead.
+        if (fetchedNominee.category.event.status !== 'closed') {
+          const leaderboardResponse = await nomineesApi.getLeaderboard(
+            fetchedNominee.category.id
+          )
+          if (leaderboardResponse.data.visibility) {
+            setResultsVisibility(leaderboardResponse.data.visibility)
+          }
+          setLeaderboard(leaderboardResponse.data.leaderboard)
+        }
       } catch {
         setError('This nominee is not available for voting right now.')
       } finally {
@@ -140,7 +152,10 @@ export default function NomineePage({
   // Find this nominee's rank
   const myIndex = leaderboard.findIndex((n) => n.id === nominee.id)
   const myRank = myIndex >= 0 ? myIndex + 1 : null
-  const myVotes = myIndex >= 0 ? leaderboard[myIndex].votes : 0
+  const myVotes = myIndex >= 0 ? leaderboard[myIndex].votes ?? 0 : 0
+  const participantsOnly = resultsVisibility === 'participants_only'
+  const resultsHidden = resultsVisibility === 'hidden'
+  const isClosed = event.status === 'closed'
 
   // Top 3, plus this nominee if they're outside top 3
   const top3 = leaderboard.slice(0, 3)
@@ -197,70 +212,157 @@ export default function NomineePage({
             <p className="text-sm text-foreground mt-4 leading-relaxed">{nominee.bio}</p>
           )}
 
-          {/* Live results */}
-          <Card className="mt-6">
-            <CardContent className="p-4">
-              <h3 className="text-sm font-semibold text-foreground mb-3">
-                {category.name} — Live Results
-              </h3>
-              <div className="space-y-2">
-                {top3.map((entry, index) => {
-                  const isMe = entry.id === nominee.id
-                  return (
-                    <div
-                      key={entry.id}
-                      className={`flex items-center justify-between p-2 rounded-lg text-sm ${
-                        isMe ? 'bg-primary/10' : ''
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                          index === 0 ? 'bg-yellow-400 text-yellow-900' : 'bg-muted text-muted-foreground'
-                        }`}>
-                          {index + 1}
-                        </span>
-                        <span className={isMe ? 'font-semibold text-primary' : 'text-foreground'}>
-                          {entry.name}{isMe ? ' (this nominee)' : ''}
-                        </span>
-                      </div>
-                      <span className="font-medium text-foreground">
-                        {entry.votes.toLocaleString()}
-                      </span>
-                    </div>
-                  )
-                })}
+          {/* Results announced (voting closed) — replaces the live results card */}
+          {isClosed ? (
+            <Card className="mt-6 overflow-hidden border-amber-300/60 dark:border-amber-700/50">
+              <div className="h-1 bg-gradient-to-r from-amber-400 to-yellow-300" />
+              <CardContent className="p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-yellow-300 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <Trophy className="w-5 h-5 text-amber-900" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground">
+                      {nominee.isWinner ? 'Winner Announced' : 'Results Announced'}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Voting has closed for {event.name}
+                    </p>
+                  </div>
+                </div>
 
-                {showMeSeparately && (
-                  <>
-                    <div className="text-center text-xs text-muted-foreground py-1">⋯</div>
-                    <div className="flex items-center justify-between p-2 rounded-lg text-sm bg-primary/10">
-                      <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 bg-muted text-muted-foreground">
-                          {myRank}
-                        </span>
-                        <span className="font-semibold text-primary">
-                          {nominee.name} (this nominee)
-                        </span>
-                      </div>
-                      <span className="font-medium text-foreground">
-                        {myVotes.toLocaleString()}
-                      </span>
-                    </div>
-                  </>
-                )}
-
-                {leaderboard.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-2">
-                    No votes yet — be the first!
+                {nominee.isWinner ? (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60">
+                    <CheckCircle2 className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                    <p className="text-sm text-foreground">
+                      <span className="font-semibold">{nominee.name}</span> is the winner of{' '}
+                      <span className="font-semibold">{category.name}</span>.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Final results for this category have been published.
                   </p>
                 )}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : !resultsHidden ? (
+            <Card className="mt-6">
+              <CardContent className="p-4">
+                <h3 className="text-sm font-semibold text-foreground mb-3">
+                  {category.name} — Live Results
+                </h3>
+                <div className="space-y-2">
+                  {participantsOnly ? (
+                    // Participants only — plain list, no rank badges, no counts
+                    leaderboard.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-2">
+                        No participants yet
+                      </p>
+                    ) : (
+                      <>
+                        {leaderboard.map((entry) => {
+                          const isMe = entry.id === nominee.id
+                          return (
+                            <div
+                              key={entry.id}
+                              className={`flex items-center justify-between p-2 rounded-lg text-sm ${
+                                isMe ? 'bg-primary/10' : ''
+                              }`}
+                            >
+                              <span className={isMe ? 'font-semibold text-primary' : 'text-foreground'}>
+                                {entry.name}{isMe ? ' (this nominee)' : ''}
+                              </span>
+                            </div>
+                          )
+                        })}
+                        <p className="text-xs text-muted-foreground text-center pt-1">
+                          Vote counts are hidden
+                        </p>
+                      </>
+                    )
+                  ) : (
+                    <>
+                      {top3.map((entry, index) => {
+                        const isMe = entry.id === nominee.id
+                        return (
+                          <div
+                            key={entry.id}
+                            className={`flex items-center justify-between p-2 rounded-lg text-sm ${
+                              isMe ? 'bg-primary/10' : ''
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                                index === 0 ? 'bg-yellow-400 text-yellow-900' : 'bg-muted text-muted-foreground'
+                              }`}>
+                                {index + 1}
+                              </span>
+                              <span className={isMe ? 'font-semibold text-primary' : 'text-foreground'}>
+                                {entry.name}{isMe ? ' (this nominee)' : ''}
+                              </span>
+                            </div>
+                            <span className="font-medium text-foreground">
+                              {(entry.votes ?? 0).toLocaleString()}
+                            </span>
+                          </div>
+                        )
+                      })}
+
+                      {showMeSeparately && (
+                        <>
+                          <div className="text-center text-xs text-muted-foreground py-1">⋯</div>
+                          <div className="flex items-center justify-between p-2 rounded-lg text-sm bg-primary/10">
+                            <div className="flex items-center gap-2">
+                              <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 bg-muted text-muted-foreground">
+                                {myRank}
+                              </span>
+                              <span className="font-semibold text-primary">
+                                {nominee.name} (this nominee)
+                              </span>
+                            </div>
+                            <span className="font-medium text-foreground">
+                              {myVotes.toLocaleString()}
+                            </span>
+                          </div>
+                        </>
+                      )}
+
+                      {leaderboard.length === 0 && (
+                        <p className="text-sm text-muted-foreground text-center py-2">
+                          No votes yet — be the first!
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
         </div>
 
         {/* Right: Vote form */}
         <div>
+          {isClosed ? (
+            <Card className="border-border/60">
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                  <Lock className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <h2 className="text-xl font-bold text-foreground mb-1">Voting Closed</h2>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Voting for {event.name} has ended. Thanks for participating!
+                </p>
+                <Link href={`/results?eventId=${event.id}&category=${category.id}`}>
+                  <Button variant="outline" className="w-full gap-2 rounded-lg">
+                    <Trophy className="w-4 h-4" />
+                    View Results
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
           <h2 className="text-2xl font-bold text-foreground mb-1">
             Vote for {nominee.name}
           </h2>
@@ -377,6 +479,8 @@ export default function NomineePage({
               Voting ends {new Date(event.endDate).toLocaleDateString()} · Secured by Paystack
             </p>
           </div>
+            </>
+          )}
         </div>
       </div>
     </div>
