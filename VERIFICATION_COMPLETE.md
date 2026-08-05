@@ -1,5 +1,10 @@
 # Frontend Verification & Completion Report
 
+> ⚠️ **STALE — historical verification report (scaffold era).** The "Ready for
+> Deployment / Supabase / Stripe / Flutterwave" statements no longer apply: the
+> app now runs against the LiquidVotes backend with Paystack. See
+> **[`README.md`](./README.md)** for the current page map and flows.
+
 ## Executive Summary
 
 ✅ **All screens built and verified** - The production-ready awards voting SaaS frontend is complete with all 14+ pages functioning as designed.

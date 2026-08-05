@@ -1,5 +1,11 @@
 # Awards Voting Platform - Frontend Complete ✅
 
+> ⚠️ **STALE — historical scaffold report (pre-July 2026).** It describes
+> "Supabase auth, Stripe, ready for backend integration" — none of that matches
+> the current app, which is fully wired to the LiquidVotes backend with JWT auth
+> and **Paystack** payments. See **[`README.md`](./README.md)** for the accurate
+> current state.
+
 ## What's Been Built
 
 A **production-ready, full-stack SaaS frontend** for an awards voting platform with 4 distinct user roles, complete authentication structure, and real data flows (no mock data).

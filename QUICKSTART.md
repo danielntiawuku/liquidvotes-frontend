@@ -1,316 +1,114 @@
-# 🎯 Awards Voting SaaS Platform - Quick Start Guide
+# 🎯 LiquidVotes — Quick Start Guide
 
-Welcome! This is your production-ready, full-featured awards voting platform frontend. Below is everything you need to get started.
+> **Updated Aug 2026.** This is a **full-stack app**: the Next.js frontend talks
+> to the LiquidVotes backend (Express + Prisma + Paystack). Earlier versions of
+> this guide described a Supabase-only scaffold — that setup is obsolete.
 
-## 📦 What You Have
+## What You Have
 
-A **complete, production-ready Next.js 16 + React 19 + Supabase frontend** with:
-
-- ✅ **51+ UI components** across 4 user roles
-- ✅ **Zero mock data** - all components are real-data ready
-- ✅ **Full TypeScript** - 100% type-safe
-- ✅ **Supabase integration** - auth, database, real-time ready
-- ✅ **Form validation** - Zod + React Hook Form
-- ✅ **Payment UI** - Multiple payment methods integrated
-- ✅ **Multi-tenant architecture** - Organizations, subscriptions, roles
-- ✅ **Production patterns** - Error handling, loading states, accessibility
+- **`awards-platform-backend`** — REST API (auth, events, votes, payments,
+  webhook, settlements, admin). Port **4000**.
+- **`awards-platform-frontend (3)`** — Next.js 16 web app. Port **3000**.
 
 ## 🚀 Quick Start (5 minutes)
 
-### 1️⃣ Install Dependencies
+### 1️⃣ Start the backend
+
 ```bash
-pnpm install
-# or: npm install / yarn install
+cd awards-platform-backend
+cp .env.example .env            # fill in real values (DB, JWT, Paystack, Supabase)
+npm install
+npx prisma migrate deploy       # apply migrations (safe — never `migrate dev`)
+npx prisma generate
+npm run dev                     # → http://localhost:4000
 ```
 
-### 2️⃣ Setup Environment
+Verify: `curl http://localhost:4000/health` → `{"status":"ok"}`
+
+### 2️⃣ Start the frontend
+
 ```bash
-cp .env.example .env.local
-# Edit .env.local with your Supabase credentials:
-# NEXT_PUBLIC_SUPABASE_URL=your_url
-# NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
-# SUPABASE_SERVICE_KEY=your_service_key
+cd "../awards-platform-frontend (3)"
+cp .env.example .env.local      # set NEXT_PUBLIC_API_URL=http://localhost:4000
+npm install
+npm run dev                     # → http://localhost:3000
 ```
 
-### 3️⃣ Start Dev Server
-```bash
-pnpm dev
-# Open http://localhost:3000
-```
+### 3️⃣ Smoke-test the flows
 
-## 📁 Project Organization
+1. Create an account (`/signup`, pick **Organizer**), log in.
+2. Create an event, add categories + nominees, submit for review.
+3. Approve the event from the **admin** side (`/admin/login` — seed or promote
+   an admin user in the DB).
+4. Vote as a voter via the nominee code; pay with a **Paystack test card**
+   (`4084 0840 8408 4081`, any future expiry, any CVV).
+5. Check the confirmation page, then results on `/results?eventId=…`.
 
-```
-/vercel/share/v0-project/
-├── README.md                    # Full documentation
-├── SETUP.md                     # Detailed setup guide  
-├── BUILD_SUMMARY.md             # What was built (this is good to read)
-├── .env.example                 # Environment template
-├── verify-setup.sh              # Setup verification script
-│
-├── app/                         # Next.js App Router
-│   ├── (public)/               # Marketing pages
-│   ├── (auth)/                 # Login/signup
-│   ├── voter/                  # Voter dashboard
-│   ├── organizer/              # Event management
-│   └── admin/                  # Admin dashboard
-│
-├── components/                  # React components
-│   ├── shared/                 # Global UI
-│   ├── public/                 # Marketing components
-│   ├── ui/                     # shadcn/ui components
-│   └── [voter|organizer|admin]/ # Role-specific components
-│
-├── lib/                        # Core utilities
-│   ├── supabase.ts            # Database client
-│   ├── auth.ts                # Authentication
-│   ├── api.ts                 # API client
-│   ├── validators.ts          # Form validation
-│   └── constants.ts           # App constants
-│
-└── types/                      # TypeScript definitions
-    ├── database.ts            # Database types
-    └── forms.ts               # Form types
-```
+## 🔐 Authentication
 
-## 🎯 Key Features by Role
+JWT-based, handled by the backend:
 
-### 👥 Voter
-- Enter event code via chatbot
-- View nominees and voting options
-- Pay for votes (card, mobile money, bank transfer)
-- Track voting history
-- See receipt/confirmation
+- Sign up / log in → backend returns `{ token, user }` → stored in
+  `localStorage` → attached as `Authorization: Bearer <token>`.
+- On 401 the app clears the token and redirects to `/login`.
 
-### 🏢 Organizer
-- Create events with 4-step wizard
-- Manage categories and nominees
-- Monitor real-time vote counts
-- Track revenue
-- Declare winners
-- Generate sharing links/QR codes
-
-### 👨‍💼 Admin
-- View platform metrics
-- Manage organizations
-- Track payments and subscriptions
-- View audit logs
-- Generate reports
-
-### 🌐 Public
-- Marketing homepage
-- Pricing page
-- About page
-- Award discovery
-
-## 📚 Documentation
+## 📚 Docs
 
 | File | Purpose |
-|------|---------|
-| **README.md** | Overview, database schema, deployment guide |
-| **SETUP.md** | Detailed setup, Supabase config, SQL scripts, workflow |
-| **BUILD_SUMMARY.md** | What was built, architecture, components list |
-| **This file** | Quick reference guide |
+|---|---|
+| [`README.md`](./README.md) | Full overview, page map, flows, API client |
+| [`SETUP.md`](./SETUP.md) | Detailed setup, env vars, troubleshooting |
+| [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) | Design tokens & components |
+| [`../awards-platform-backend/README.md`](../awards-platform-backend/README.md) | Backend API reference |
+| [`../awards-platform-backend/MIGRATIONS.md`](../awards-platform-backend/MIGRATIONS.md) | Safe DB migration workflow |
+| [`../CHANGELOG.md`](../CHANGELOG.md) | All recent changes |
 
-## 🔧 Core Technologies
+## ✅ Verification Checklist
 
-- **Framework**: Next.js 16 (App Router)
-- **UI Library**: React 19 with shadcn/ui
-- **Database**: Supabase (PostgreSQL)
-- **Auth**: Supabase Auth
-- **Forms**: React Hook Form + Zod
-- **Styling**: Tailwind CSS v4
-- **Charts**: Recharts
-- **HTTP**: Axios
-
-## ✨ What's Already Done
-
-### Components Built
-- Navigation with auth state
-- Footer with links
-- Login/signup forms
-- Event creation wizard (4 steps)
-- Voter dashboard with history
-- Organizer dashboard with metrics
-- Admin dashboard with oversight
-- Payment checkout (card/mobile/bank)
-- Nominee card with vote counter
-- Real-time analytics dashboard (scaffolded)
-
-### Infrastructure Ready
-- Supabase client configured
-- Auth utilities implemented
-- API client with token refresh
-- Form validation schemas
-- Database types for 8 tables
-- Protected routes with AuthGuard
-- Error handling patterns
-- Loading state components
-
-## 🔐 Security Features
-
-✅ TypeScript type safety
-✅ Input validation (Zod)
-✅ Protected routes (AuthGuard)
-✅ Supabase Auth integration
-✅ No hardcoded secrets
-✅ CORS-safe patterns
-✅ SQL injection prevention (parameterized)
-✅ Row-level security ready
-
-## 📊 Database Schema Included
-
-8 production-ready tables:
-1. **users** - User profiles & roles
-2. **organizations** - Org accounts & subscriptions
-3. **events** - Voting events
-4. **categories** - Award categories
-5. **nominees** - Nominees per category
-6. **votes** - Cast votes
-7. **payments** - Payment transactions
-8. **subscriptions** - Org subscriptions
-
-See SETUP.md for SQL creation scripts.
-
-## 🚀 Deployment Ready
-
-### For Vercel:
-```bash
-# Connect GitHub repo
-git push origin main
-
-# Go to vercel.com/new
-# Select this repository
-# Add environment variables
-# Deploy!
-```
-
-### For other platforms:
-```bash
-pnpm build
-pnpm start
-```
-
-## 📋 Next Steps
-
-### ✅ Immediate (Today)
-1. Run setup verification: `bash verify-setup.sh`
-2. Install dependencies: `pnpm install`
-3. Configure `.env.local` with Supabase keys
-4. Start dev server: `pnpm dev`
-5. Test homepage at `http://localhost:3000`
-
-### 📅 Short Term (This Week)
-1. Create Supabase project and tables
-2. Implement `/api/*` endpoints
-3. Connect forms to APIs
-4. Setup payment gateway integration
-5. Configure real-time analytics
-
-### 🎯 Medium Term (Next 2-4 Weeks)
-1. Test all voting flows end-to-end
-2. Implement QR code generation
-3. Setup email notifications
-4. Add subscriber/admin notifications
-5. Performance optimization
-
-### 🚀 Long Term
-1. Deploy to production
-2. Monitor analytics
-3. Add advanced features
-4. Scale infrastructure
+- [ ] Backend responds on `http://localhost:4000/health`
+- [ ] Frontend loads at `http://localhost:3000`
+- [ ] Homepage CTAs: Cast Your Vote → `/voter/assistant`, Browse Awards →
+      `/awards`, Host an Event → `/signup`
+- [ ] Navigation + footer visible on every page (about, contact, terms, …)
+- [ ] Can create an event, submit for review, approve as admin
+- [ ] Can vote + pay via Paystack test card and see the receipt
+- [ ] Closing an event reveals full results on `/results`
 
 ## 🛠️ Common Commands
 
 ```bash
-# Development
-pnpm dev                    # Start dev server
-pnpm type-check            # Check TypeScript
-pnpm lint                  # Run linter
+# Frontend
+npm run dev        # dev server
+npm run build      # production build
+npm run lint       # eslint
 
-# Build & Deploy
-pnpm build                 # Build for production
-pnpm start                 # Start production server
-
-# Database
-# See SETUP.md for SQL scripts to run in Supabase
-
-# Git
-git add .
-git commit -m "your message"
-git push origin main
+# Backend
+npm run dev        # dev server
+npm run build      # tsc → dist/
+npx prisma migrate deploy   # apply DB migrations (never `migrate dev`)
+npx prisma generate         # regenerate client
 ```
 
 ## 🐛 Troubleshooting
 
-### Dev server won't start
-```bash
-# Kill existing process on port 3000
-# macOS/Linux: lsof -i :3000 | kill -9 <PID>
-# Windows: netstat -ano | findstr :3000 | taskkill /PID <PID> /F
-
-# Try again
-pnpm dev
-```
-
-### Supabase connection error
-- Verify `NEXT_PUBLIC_SUPABASE_URL` is correct
-- Check `.env.local` is not `.env`
-- Ensure Supabase project is active
-- Check API keys are valid
-
-### TypeScript errors
-```bash
-pnpm type-check
-pnpm lint --fix
-```
-
-See SETUP.md for more troubleshooting.
-
-## 📞 Getting Help
-
-- **Docs**: README.md, SETUP.md, BUILD_SUMMARY.md
-- **Errors**: Check browser console and server logs
-- **Supabase**: https://supabase.com/docs
-- **Next.js**: https://nextjs.org/docs
-- **React**: https://react.dev
-- **Tailwind**: https://tailwindcss.com
-
-## ✅ Verification Checklist
-
-- [ ] Node 18+ installed (`node -v`)
-- [ ] Pnpm/npm installed (`pnpm --version` or `npm --version`)
-- [ ] Dependencies installed (`pnpm install`)
-- [ ] `.env.local` created with Supabase keys
-- [ ] Dev server starts (`pnpm dev`)
-- [ ] Homepage loads at `http://localhost:3000`
-- [ ] Navigation has sign in/sign up buttons
-- [ ] Pricing page loads
-- [ ] About page loads
+| Symptom | Fix |
+|---|---|
+| API errors / blank data | Is the backend running? Check `NEXT_PUBLIC_API_URL`. |
+| Redirected to `/login` | Token expired — sign in again. |
+| Paystack errors | Public key must match the backend secret (same account). |
+| Port 3000 busy | `npm run dev -- -p 3001` |
+| Stale build | `rm -rf .next && npm run build` |
+| `migrate dev` demands a reset | **Say no.** Use `migrate deploy` (see MIGRATIONS.md). |
 
 ## 🎉 Ready to Build!
 
-You have a **complete, production-ready frontend** with:
-- Zero mock data
-- Full type safety
-- All UI components
-- Database integration ready
-- Payment processing UI
-- Admin dashboard
-- Organizer tools
-- Voter experience
+You have a working full-stack voting platform:
 
-**Everything is scaffolded and ready for backend integration.**
+- Pay-per-vote events with Paystack payments (webhook-verified)
+- Live results with visibility controls (full / participants-only / hidden)
+- Winner publishing + per-category close
+- Organizer settlements & admin-approved withdrawals
+- Real, API-backed history & support pages (no mock data)
 
-Start developing with:
-```bash
-pnpm dev
-```
-
-Then visit → **http://localhost:3000**
-
----
-
-**Questions?** Check the docs. **Stuck?** See SETUP.md troubleshooting section. **Ready to deploy?** See README.md deployment guide.
-
-Happy coding! 🚀
+**Start:** backend `npm run dev`, then frontend `npm run dev`, then visit
+http://localhost:3000.

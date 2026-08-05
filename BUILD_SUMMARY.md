@@ -1,5 +1,13 @@
 # Awards Voting SaaS Frontend - Build Summary
 
+> ⚠️ **STALE — historical scaffold summary (pre-July 2026).** This document
+> describes the frontend as "ready for backend integration via Supabase" and
+> claims "zero mock data". Both are **out of date**: the app is now wired to
+> the LiquidVotes backend (JWT auth, Paystack payments, live results,
+> settlements, admin withdrawals), and several pages were de-mocked or removed
+> in Aug 2026. See **[`README.md`](./README.md)** for the accurate current
+> state and **[`../CHANGELOG.md`](../CHANGELOG.md)** for what changed.
+
 ## 🎉 Build Complete!
 
 A **production-ready, multi-tenant SaaS platform** for hosting and managing secure online voting events has been successfully created. This frontend is fully typed, validated, and ready for backend integration via Supabase.

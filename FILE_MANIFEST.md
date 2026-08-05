@@ -1,5 +1,11 @@
 # 📂 Complete File Manifest - Awards Voting SaaS Platform
 
+> ⚠️ **STALE — historical file listing (scaffold era).** The structure listed
+> below predates the backend integration: many pages were added (results,
+> winners, settlements, withdrawals, history, support…) and some removed
+> (admin/categories, notifications). See **[`README.md`](./README.md) →
+> Architecture** for the current page map.
+
 ## Overview
 Total files created: 50+ components, utilities, and configuration files
 Total lines of code: 5000+ lines
