@@ -351,7 +351,7 @@ export default function EventDetailsPage({
                   step="0.01"
                   value={form.votePrice}
                   onChange={(e) => setForm((p) => ({ ...p, votePrice: e.target.value }))}
-                  disabled={event.status !== 'draft'}
+                  disabled={event.status === 'closed'}
                   className="rounded-lg"
                 />
               </div>
