@@ -102,10 +102,6 @@ export default function NomineePage({
       setFormError('Please enter your full name.')
       return
     }
-    if (!email.trim()) {
-      setFormError('Please enter your email to receive a receipt.')
-      return
-    }
     if (!nominee) return
 
     setPaying(true)
@@ -115,7 +111,7 @@ export default function NomineePage({
       const response = await paymentsApi.initiate({
         nomineeId: nominee.id,
         quantity,
-        email: email.trim(),
+        email: email.trim() || undefined,
       })
 
       window.location.href = response.data.authorizationUrl
@@ -386,7 +382,7 @@ export default function NomineePage({
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">
-                Email for receipt
+                Email for receipt (optional)
               </label>
               <Input
                 type="email"
@@ -395,7 +391,7 @@ export default function NomineePage({
                   setEmail(e.target.value)
                   setFormError('')
                 }}
-                placeholder="name@example.com"
+                placeholder="name@example.com (optional)"
               />
             </div>
 

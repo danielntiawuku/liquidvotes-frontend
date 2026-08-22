@@ -66,11 +66,6 @@ function CheckoutContent() {
   const total = votePrice * quantity
 
   const handlePay = async () => {
-    if (!email.trim()) {
-      setError('Please enter your email to receive a receipt')
-      return
-    }
-
     if (!nominee) return
 
     setPaying(true)
@@ -80,7 +75,7 @@ function CheckoutContent() {
       const response = await paymentsApi.initiate({
         nomineeId: nominee.id,
         quantity,
-        email: email.trim(),
+        email: email.trim() || undefined,
       })
 
       window.location.href = response.data.authorizationUrl
@@ -174,9 +169,9 @@ function CheckoutContent() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Receipt</CardTitle>
+          <CardTitle className="text-base">Receipt (optional)</CardTitle>
           <CardDescription>
-            Enter your email to receive a payment receipt
+            Enter your email to receive a payment receipt, or leave blank to skip
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -187,7 +182,7 @@ function CheckoutContent() {
               setEmail(e.target.value)
               setError('')
             }}
-            placeholder="your@email.com"
+            placeholder="your@email.com (optional)"
           />
         </CardContent>
       </Card>

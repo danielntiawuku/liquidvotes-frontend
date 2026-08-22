@@ -177,7 +177,7 @@ export const paymentsApi = {
   initiate: (data: {
     nomineeId: string
     quantity: number
-    email: string
+    email?: string
     phone?: string
   }) => api.post('/payments/initiate', data),
 
