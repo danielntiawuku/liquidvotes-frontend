@@ -482,7 +482,7 @@ export default function EventDetailsPage({
                           {category.nominees.length} nominees
                         </span>
                       </div>
-                      {event.status === 'draft' && (
+                      {event.status !== 'closed' && (
                         <Button
                           variant="ghost"
                           size="icon"
