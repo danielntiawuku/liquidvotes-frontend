@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="wave" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22d3ee;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Ballot box -->
+  <rect x="25" y="30" width="70" height="55" rx="8" fill="url(#grad)"/>
+  <!-- Slot -->
+  <rect x="40" y="22" width="40" height="8" rx="4" fill="#4f46e5"/>
+  <!-- Ballot paper going in -->
+  <rect x="48" y="16" width="24" height="20" rx="3" fill="white" opacity="0.9"/>
+  <!-- Checkmark on ballot -->
+  <polyline points="54,25 58,29 66,20" stroke="url(#grad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Liquid wave at bottom -->
+  <path d="M25,75 Q35,68 45,75 Q55,82 65,75 Q75,68 85,75 Q95,82 95,75 L95,85 Q95,87 93,87 L27,87 Q25,87 25,85 Z" fill="url(#wave)" opacity="0.85"/>
+</svg>

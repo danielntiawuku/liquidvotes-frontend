@@ -12,32 +12,18 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Awards Voting Platform',
+  title: 'LiquidVotes',
   description: 'Host, organize, and run secure online voting events for awards and recognition',
-  keywords: ['awards', 'voting', 'events', 'online voting', 'voting platform'],
-  generator: 'v0.app',
+  keywords: ['awards', 'voting', 'events', 'online voting', 'voting platform', 'LiquidVotes'],
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/favicon.svg',
+    apple: '/apple-touch-icon.svg',
   },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://awards-voting.com',
-    siteName: 'Awards Voting Platform',
+    url: 'https://liquidvotes.online',
+    siteName: 'LiquidVotes',
   },
 }
 

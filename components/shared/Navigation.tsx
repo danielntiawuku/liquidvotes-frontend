@@ -66,10 +66,8 @@ export function Navigation() {
         <div className="flex justify-between items-center h-16">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 font-bold text-lg text-primary hover:text-primary/80 transition">
-            <div className="w-9 h-9 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center shadow-md">
-              <span className="text-white font-bold text-sm">LV</span>
-            </div>
+          <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary hover:text-primary/80 transition">
+            <img src="/logo.svg" alt="LiquidVotes" className="w-9 h-9" />
             <span>LiquidVotes</span>
           </Link>
 
