@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { eventsApi } from '@/lib/api'
 import { useWarmUp } from '@/lib/hooks'
-import { Copy, Check, QrCode, Link, Share2, Loader2 } from 'lucide-react'
+import { Copy, Check, QrCode, Link, Share2, Loader2, Download, MessageCircle } from 'lucide-react'
 
 interface Nominee {
   id: string
@@ -21,7 +21,9 @@ interface Event {
   name: string
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+const APP_URL = typeof window !== 'undefined'
+  ? window.location.origin
+  : (process.env.NEXT_PUBLIC_APP_URL || 'https://liquidvotes.online')
 
 function ShareEventContent() {
   const searchParams = useSearchParams()
@@ -94,6 +96,69 @@ function ShareEventContent() {
     await navigator.clipboard.writeText(eventUrl)
     setCopiedUrl(true)
     setTimeout(() => setCopiedUrl(false), 2000)
+  }
+
+  const exportAllCodes = () => {
+    const selectedEvent = events.find((e) => e.id === selectedEventId)
+    const eventName = selectedEvent?.name || 'Event'
+
+    const grouped = nominees.reduce((acc, n) => {
+      if (!acc[n.categoryName]) acc[n.categoryName] = []
+      acc[n.categoryName].push(n)
+      return acc
+    }, {} as Record<string, Nominee[]>)
+
+    let content = `${eventName} — Nominee Codes\n`
+    content += `${'='.repeat(40)}\n\n`
+    content += `Vote at: ${eventUrl}\n\n`
+
+    for (const [category, catsNominees] of Object.entries(grouped)) {
+      content += `${category}\n`
+      content += `${'-'.repeat(30)}\n`
+      for (const n of catsNominees) {
+        content += `  ${n.code}  —  ${n.name}\n`
+      }
+      content += `\n`
+    }
+
+    content += `\nDial *928*268# to vote via USSD\n`
+
+    const blob = new Blob([content], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${eventName.replace(/\s+/g, '_')}_nominee_codes.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  const shareAllLinks = async () => {
+    const selectedEvent = events.find((e) => e.id === selectedEventId)
+    const eventName = selectedEvent?.name || 'Event'
+
+    const grouped = nominees.reduce((acc, n) => {
+      if (!acc[n.categoryName]) acc[n.categoryName] = []
+      acc[n.categoryName].push(n)
+      return acc
+    }, {} as Record<string, Nominee[]>)
+
+    let text = `${eventName} — Vote Now!\n${eventUrl}\n\n`
+
+    for (const [category, catsNominees] of Object.entries(grouped)) {
+      text += `${category}:\n`
+      for (const n of catsNominees) {
+        text += `  ${n.name} → ${n.code}\n`
+      }
+      text += `\n`
+    }
+
+    text += `Dial *928*268# to vote via USSD`
+
+    await navigator.clipboard.writeText(text)
+    setCopiedId('all-links')
+    setTimeout(() => setCopiedId(null), 2000)
   }
 
   const filtered = nominees.filter(
@@ -270,7 +335,16 @@ function ShareEventContent() {
           )}
 
           {nominees.length > 0 && (
-            <div className="mt-6 pt-4 border-t border-border">
+            <div className="mt-6 pt-4 border-t border-border space-y-3">
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={exportAllCodes}
+              >
+                <Download className="w-4 h-4" />
+                Export All Nominee Codes
+              </Button>
+
               <Button
                 variant="outline"
                 className="w-full gap-2"
@@ -283,6 +357,18 @@ function ShareEventContent() {
                   <><Check className="w-4 h-4 text-green-600" />All Codes Copied!</>
                 ) : (
                   <><Copy className="w-4 h-4" />Copy All Codes</>
+                )}
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={shareAllLinks}
+              >
+                {copiedId === 'all-links' ? (
+                  <><Check className="w-4 h-4 text-green-600" />All Links Copied!</>
+                ) : (
+                  <><MessageCircle className="w-4 h-4" />Share All Links (Copy for WhatsApp)</>
                 )}
               </Button>
             </div>
