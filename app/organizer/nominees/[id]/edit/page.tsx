@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { nomineesApi } from '@/lib/api'
 import { useWarmUp } from '@/lib/hooks'
+import { ImageUpload } from '@/components/shared/ImageUpload'
 import { Save, ArrowLeft, Loader2, CheckCircle, User } from 'lucide-react'
 import Link from 'next/link'
 
@@ -233,17 +234,18 @@ export default function EditNomineePage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">
-                Photo URL
+                Photo
               </label>
-              <Input
-                name="photoUrl"
-                value={form.photoUrl}
-                onChange={handleChange}
-                placeholder="https://example.com/photo.jpg"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Paste a link to the nominee&apos;s photo
-              </p>
+              <div className="max-w-xs">
+                <ImageUpload
+                  value={form.photoUrl || null}
+                  onChange={(url) => setForm((prev) => ({ ...prev, photoUrl: url || '' }))}
+                  folder="nominees"
+                  label="Upload nominee photo"
+                  hint="PNG, JPG, JPEG or WEBP. Max 5MB."
+                  aspectRatio="square"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
