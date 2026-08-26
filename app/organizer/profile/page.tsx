@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { authApi, organizerApi } from '@/lib/api'
 import { useWarmUp } from '@/lib/hooks'
-import { Save, Building2, Mail, Phone, Globe, MapPin, Camera, Loader2, CheckCircle } from 'lucide-react'
+import { Save, Building2, Mail, Phone, Globe, MapPin, Camera, Loader2, CheckCircle, Lock } from 'lucide-react'
 
 interface User {
   id: string
@@ -45,6 +45,13 @@ export default function OrganizerProfilePage() {
   const [emailSaving, setEmailSaving] = useState(false)
   const [emailError, setEmailError] = useState('')
   const [emailSaved, setEmailSaved] = useState(false)
+
+  const [editingPassword, setEditingPassword] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [passwordSaving, setPasswordSaving] = useState(false)
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordSaved, setPasswordSaved] = useState(false)
 
   // Warm up the backend so the profile request finds a warm server.
   useWarmUp()
@@ -374,6 +381,103 @@ export default function OrganizerProfilePage() {
                 onChange={handleChange}
                 placeholder="City, Country"
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Security */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Lock className="w-4 h-4" />
+              Security
+            </CardTitle>
+            <CardDescription>
+              Manage your account password
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Password
+              </label>
+              {editingPassword ? (
+                <div className="space-y-3">
+                  <Input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Current password"
+                  />
+                  <Input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="New password (min 8 characters)"
+                  />
+                  {passwordError && (
+                    <p className="text-xs text-destructive">{passwordError}</p>
+                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={async () => {
+                        setPasswordSaving(true)
+                        setPasswordError('')
+                        try {
+                          await authApi.updatePassword({
+                            currentPassword,
+                            newPassword,
+                          })
+                          setEditingPassword(false)
+                          setCurrentPassword('')
+                          setNewPassword('')
+                          setPasswordSaved(true)
+                          setTimeout(() => setPasswordSaved(false), 3000)
+                        } catch (err: any) {
+                          setPasswordError(err?.response?.data?.message || 'Failed to update password.')
+                        } finally {
+                          setPasswordSaving(false)
+                        }
+                      }}
+                      disabled={passwordSaving || !currentPassword || !newPassword || newPassword.length < 8}
+                    >
+                      {passwordSaving ? 'Saving...' : 'Update Password'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setEditingPassword(false)
+                        setCurrentPassword('')
+                        setNewPassword('')
+                        setPasswordError('')
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="password"
+                    value="••••••••"
+                    disabled
+                    className="opacity-60 max-w-xs"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setEditingPassword(true)}
+                  >
+                    Change
+                  </Button>
+                  {passwordSaved && (
+                    <span className="text-xs text-green-600">✓ Updated</span>
+                  )}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

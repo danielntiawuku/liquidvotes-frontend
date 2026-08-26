@@ -90,6 +90,9 @@ export const authApi = {
 
   updateEmail: (data: { email: string; password: string }) =>
     api.put('/auth/email', data),
+
+  updatePassword: (data: { currentPassword: string; newPassword: string }) =>
+    api.put('/auth/password', data),
 }
 
 // ============================================
