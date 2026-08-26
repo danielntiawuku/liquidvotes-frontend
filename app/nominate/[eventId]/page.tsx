@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { nominationApi } from '@/lib/api'
-import { Loader2, CheckCircle, Send, UserPlus, Info } from 'lucide-react'
+import { Loader2, CheckCircle, Send, UserPlus, Info, Clock, Lock } from 'lucide-react'
 
 interface EventInfo {
   id: string
@@ -18,6 +18,8 @@ interface EventInfo {
   votePrice: number
   currency: string
   autoApproveNominees: boolean
+  nominationStartDate: string | null
+  nominationEndDate: string | null
   categories: { id: string; name: string }[]
 }
 
@@ -189,7 +191,61 @@ export default function NominatePage() {
               </Badge>
             )}
           </div>
+
+          {/* Nomination dates */}
+          {(event?.nominationStartDate || event?.nominationEndDate) && (
+            <div className="mt-4 inline-flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-full px-4 py-1.5">
+              <Clock className="w-3.5 h-3.5" />
+              {event?.nominationStartDate && event?.nominationEndDate
+                ? `Nominations: ${new Date(event.nominationStartDate).toLocaleDateString()} — ${new Date(event.nominationEndDate).toLocaleDateString()}`
+                : event?.nominationStartDate
+                  ? `Nominations open from ${new Date(event.nominationStartDate).toLocaleDateString()}`
+                  : `Nominations close ${new Date(event.nominationEndDate!).toLocaleDateString()}`
+              }
+            </div>
+          )}
         </div>
+
+        {/* Check if nominations are closed */}
+        {(() => {
+          const now = new Date()
+          const startDate = event?.nominationStartDate ? new Date(event.nominationStartDate) : null
+          const endDate = event?.nominationEndDate ? new Date(event.nominationEndDate) : null
+
+          if (startDate && now < startDate) {
+            return (
+              <Card className="shadow-lg border-border/60">
+                <CardContent className="pt-8 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
+                    <Clock className="w-7 h-7 text-amber-600" />
+                  </div>
+                  <p className="text-foreground font-medium mb-2">Nominations Not Yet Open</p>
+                  <p className="text-sm text-muted-foreground">
+                    Nominations will open on {startDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  </p>
+                </CardContent>
+              </Card>
+            )
+          }
+
+          if (endDate && now > endDate) {
+            return (
+              <Card className="shadow-lg border-border/60">
+                <CardContent className="pt-8 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+                    <Lock className="w-7 h-7 text-destructive" />
+                  </div>
+                  <p className="text-foreground font-medium mb-2">Nominations Closed</p>
+                  <p className="text-sm text-muted-foreground">
+                    The nomination period ended on {endDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  </p>
+                </CardContent>
+              </Card>
+            )
+          }
+
+          return null
+        })()}
 
         {/* Nomination Form */}
         <Card className="shadow-lg border-border/60">

@@ -53,6 +53,8 @@ interface Event {
   codePrefix: string
   bannerUrl: string | null
   autoApproveNominees: boolean
+  nominationStartDate: string | null
+  nominationEndDate: string | null
   categories: Category[]
 }
 
@@ -77,6 +79,8 @@ export default function EventDetailsPage({
     endDate: '',
     bannerUrl: null as string | null,
     autoApproveNominees: false,
+    nominationStartDate: '',
+    nominationEndDate: '',
   })
 
   // Add category
@@ -110,6 +114,8 @@ export default function EventDetailsPage({
           endDate: e.endDate.split('T')[0],
           bannerUrl: e.bannerUrl ?? null,
           autoApproveNominees: e.autoApproveNominees ?? false,
+          nominationStartDate: e.nominationStartDate ? e.nominationStartDate.split('T')[0] : '',
+          nominationEndDate: e.nominationEndDate ? e.nominationEndDate.split('T')[0] : '',
         })
       } catch {
         setError('Failed to load event.')
@@ -132,6 +138,8 @@ export default function EventDetailsPage({
         endDate: form.endDate,
         bannerUrl: form.bannerUrl ?? undefined,
         autoApproveNominees: form.autoApproveNominees,
+        nominationStartDate: form.nominationStartDate || undefined,
+        nominationEndDate: form.nominationEndDate || undefined,
       })
       setEvent((prev: Event | null) =>
         prev
@@ -407,6 +415,36 @@ export default function EventDetailsPage({
                   disabled={event.status === 'closed'}
                   className="rounded-lg"
                 />
+              </div>
+            </div>
+
+            {/* Nomination Dates */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-foreground mb-1">Nomination Period (optional)</label>
+              <p className="text-xs text-muted-foreground mb-2">
+                When the public nomination link is valid. Leave blank to allow anytime.
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">Nominations Open</label>
+                  <Input
+                    type="date"
+                    value={form.nominationStartDate}
+                    onChange={(e) => setForm((p) => ({ ...p, nominationStartDate: e.target.value }))}
+                    disabled={event.status === 'closed'}
+                    className="rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">Nominations Close</label>
+                  <Input
+                    type="date"
+                    value={form.nominationEndDate}
+                    onChange={(e) => setForm((p) => ({ ...p, nominationEndDate: e.target.value }))}
+                    disabled={event.status === 'closed'}
+                    className="rounded-lg"
+                  />
+                </div>
               </div>
             </div>
 

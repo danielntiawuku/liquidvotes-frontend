@@ -9,6 +9,8 @@ export const eventSchema = z.object({
   currency: z.string().min(1, 'Currency is required'),
   votingMethod: z.enum(['single', 'multiple', 'weighted']),
   allowInternational: z.boolean(),
+  nominationStartDate: z.string().optional(),
+  nominationEndDate: z.string().optional(),
 })
 
 export type EventFormData = z.infer<typeof eventSchema>

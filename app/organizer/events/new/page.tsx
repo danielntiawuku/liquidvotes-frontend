@@ -57,6 +57,8 @@ export default function CreateEventPage() {
         votePrice: data.pricePerVote,
         startDate: data.startDate,
         endDate: data.endDate,
+        nominationStartDate: data.nominationStartDate || undefined,
+        nominationEndDate: data.nominationEndDate || undefined,
       })
 
       const eventId = response.data.event.id
@@ -198,6 +200,31 @@ export default function CreateEventPage() {
                   {errors.endDate && (
                     <p className="text-xs text-destructive mt-1">{errors.endDate.message}</p>
                   )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Nomination Period (optional)</label>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Set when public nominations open and close. Leave blank to allow nominations anytime while the event is published.
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">Nominations Open</label>
+                    <Input
+                      {...register('nominationStartDate')}
+                      type="date"
+                      disabled={loading}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">Nominations Close</label>
+                    <Input
+                      {...register('nominationEndDate')}
+                      type="date"
+                      disabled={loading}
+                    />
+                  </div>
                 </div>
               </div>
 
