@@ -39,6 +39,12 @@ export default function OrganizerProfilePage() {
     bio: '',
     organizationType: '',
   })
+  const [editingEmail, setEditingEmail] = useState(false)
+  const [newEmail, setNewEmail] = useState('')
+  const [emailPassword, setEmailPassword] = useState('')
+  const [emailSaving, setEmailSaving] = useState(false)
+  const [emailError, setEmailError] = useState('')
+  const [emailSaved, setEmailSaved] = useState(false)
 
   // Warm up the backend so the profile request finds a warm server.
   useWarmUp()
@@ -251,16 +257,90 @@ export default function OrganizerProfilePage() {
               <label className="block text-sm font-medium text-foreground mb-1">
                 Email
               </label>
-              <Input
-                name="email"
-                type="email"
-                value={profile.email}
-                disabled
-                className="opacity-60"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Email cannot be changed here
-              </p>
+              {editingEmail ? (
+                <div className="space-y-3">
+                  <Input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="New email address"
+                  />
+                  <Input
+                    type="password"
+                    value={emailPassword}
+                    onChange={(e) => setEmailPassword(e.target.value)}
+                    placeholder="Confirm your password"
+                  />
+                  {emailError && (
+                    <p className="text-xs text-destructive">{emailError}</p>
+                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={async () => {
+                        setEmailSaving(true)
+                        setEmailError('')
+                        try {
+                          const res = await authApi.updateEmail({
+                            email: newEmail,
+                            password: emailPassword,
+                          })
+                          const newUser = res.data.user
+                          setUser(newUser)
+                          setProfile((prev) => ({ ...prev, email: newUser.email }))
+                          // Update stored token if a new one was returned
+                          if (res.data.token) {
+                            localStorage.setItem('token', res.data.token)
+                          }
+                          setEditingEmail(false)
+                          setEmailSaved(true)
+                          setTimeout(() => setEmailSaved(false), 3000)
+                        } catch (err: any) {
+                          setEmailError(err?.response?.data?.message || 'Failed to update email.')
+                        } finally {
+                          setEmailSaving(false)
+                        }
+                      }}
+                      disabled={emailSaving || !newEmail || !emailPassword}
+                    >
+                      {emailSaving ? 'Saving...' : 'Confirm Change'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setEditingEmail(false)
+                        setNewEmail('')
+                        setEmailPassword('')
+                        setEmailError('')
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={profile.email}
+                    disabled
+                    className="opacity-60"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setEditingEmail(true)
+                      setNewEmail(profile.email)
+                    }}
+                  >
+                    Change
+                  </Button>
+                  {emailSaved && (
+                    <span className="text-xs text-green-600">✓ Updated</span>
+                  )}
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">

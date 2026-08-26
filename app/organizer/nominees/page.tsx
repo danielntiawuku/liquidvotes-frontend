@@ -295,7 +295,7 @@ export default function NomineesManagementPage() {
 
                       {/* Actions */}
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <Link href={`/organizer/events/${selectedEventId}/details`}>
+                        <Link href={`/organizer/nominees/${nominee.id}/edit`}>
                           <Button variant="outline" size="sm" className="rounded-lg">
                             Edit
                           </Button>

@@ -87,6 +87,9 @@ export const authApi = {
 
   me: () =>
     api.get('/auth/me'),
+
+  updateEmail: (data: { email: string; password: string }) =>
+    api.put('/auth/email', data),
 }
 
 // ============================================
