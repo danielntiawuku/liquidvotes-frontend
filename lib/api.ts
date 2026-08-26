@@ -174,6 +174,24 @@ export const nomineesApi = {
 }
 
 // ============================================
+// PUBLIC NOMINATION
+// ============================================
+export const nominationApi = {
+  getEvent: (eventId: string) =>
+    api.get(`/public/events/${eventId}/nominate`),
+
+  submit: (eventId: string, data: {
+    categoryId: string
+    name: string
+    bio?: string
+    photoUrl?: string
+    nomineeEmail?: string
+    nomineePhone?: string
+    nominatorName?: string
+  }) => api.post(`/public/events/${eventId}/nominate`, data),
+}
+
+// ============================================
 // PAYMENTS
 // ============================================
 export const paymentsApi = {

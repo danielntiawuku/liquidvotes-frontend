@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { eventsApi } from '@/lib/api'
 import { useWarmUp } from '@/lib/hooks'
-import { Copy, Check, QrCode, Link, Share2, Loader2, Download, MessageCircle } from 'lucide-react'
+import { Copy, Check, QrCode, Link, Share2, Loader2, Download, MessageCircle, UserPlus } from 'lucide-react'
 
 interface Nominee {
   id: string
@@ -36,6 +36,7 @@ function ShareEventContent() {
   const [error, setError] = useState('')
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [copiedUrl, setCopiedUrl] = useState(false)
+  const [copiedNominateUrl, setCopiedNominateUrl] = useState(false)
   const [search, setSearch] = useState('')
 
   // Warm up the backend so the events + nominees requests find a warm server.
@@ -85,6 +86,7 @@ function ShareEventContent() {
   }, [selectedEventId])
 
   const eventUrl = `${APP_URL}/voter/assistant`
+  const nominateUrl = `${APP_URL}/nominate/${selectedEventId}`
 
   const copyToClipboard = async (text: string, id: string) => {
     await navigator.clipboard.writeText(text)
@@ -96,6 +98,12 @@ function ShareEventContent() {
     await navigator.clipboard.writeText(eventUrl)
     setCopiedUrl(true)
     setTimeout(() => setCopiedUrl(false), 2000)
+  }
+
+  const copyNominateUrl = async () => {
+    await navigator.clipboard.writeText(nominateUrl)
+    setCopiedNominateUrl(true)
+    setTimeout(() => setCopiedNominateUrl(false), 2000)
   }
 
   const exportAllCodes = () => {
@@ -252,6 +260,47 @@ function ShareEventContent() {
             >
               <Share2 className="w-3.5 h-3.5" />
               Share on X
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <UserPlus className="w-4 h-4" />
+            Nomination Link
+          </CardTitle>
+          <CardDescription>
+            Share this link so people can nominate themselves or others for your event
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2">
+            <Input value={nominateUrl} readOnly className="flex-1 bg-muted text-sm" />
+            <Button onClick={copyNominateUrl} variant="outline" className="gap-2 flex-shrink-0">
+              {copiedNominateUrl ? (
+                <><Check className="w-4 h-4 text-green-600" />Copied!</>
+              ) : (
+                <><Copy className="w-4 h-4" />Copy</>
+              )}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            People can select a category and submit nominees directly — no account needed.
+            {' '}{selectedEvent && (selectedEvent as any).autoApproveNominees
+              ? 'Nominees are auto-approved.'
+              : 'Nominees will need your approval.'}
+          </p>
+          <div className="flex gap-2 mt-3 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Nominate someone for ${selectedEvent?.name || 'our event'}: ${nominateUrl}`)}`, '_blank')}
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              Share on WhatsApp
             </Button>
           </div>
         </CardContent>

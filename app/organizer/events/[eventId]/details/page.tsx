@@ -18,6 +18,9 @@ import {
   CheckCircle,
   XCircle,
   Sparkles,
+  Link2,
+  Copy,
+  Share2,
 } from 'lucide-react'
 
 type NomineeFormState = Record<string, { name: string; bio: string; photoUrl: string | null }>
@@ -86,6 +89,9 @@ export default function EventDetailsPage({
 
   // Moderating nominee
   const [moderatingId, setModeratingId] = useState<string | null>(null)
+
+  // Nomination link
+  const [linkCopied, setLinkCopied] = useState(false)
 
   // Warm up the backend so the event + categories + nominees requests find a warm server.
   useWarmUp()
@@ -280,16 +286,43 @@ export default function EventDetailsPage({
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
-        <Link href={`/organizer/events/${eventId}`}>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">{event.name}</h1>
-          <p className="text-sm text-muted-foreground">Event Settings & Nominees</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div className="flex items-center gap-3">
+          <Link href={`/organizer/events/${eventId}`}>
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">{event.name}</h1>
+            <p className="text-sm text-muted-foreground">Event Settings & Nominees</p>
+          </div>
         </div>
+        {event.status !== 'closed' && (
+          <Button
+            variant="outline"
+            className="gap-2 shadow-sm"
+            onClick={() => {
+              const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/nominate/${eventId}`
+              navigator.clipboard.writeText(url).then(() => {
+                setLinkCopied(true)
+                setTimeout(() => setLinkCopied(false), 2000)
+              })
+            }}
+          >
+            {linkCopied ? (
+              <>
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                Link Copied!
+              </>
+            ) : (
+              <>
+                <Link2 className="w-4 h-4" />
+                Copy Nomination Link
+              </>
+            )}
+          </Button>
+        )}
       </div>
 
       <div className="space-y-6">
