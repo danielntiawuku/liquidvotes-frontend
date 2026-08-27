@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { nominationApi } from '@/lib/api'
 import { Loader2, CheckCircle, Send, UserPlus, Info, Clock, Lock } from 'lucide-react'
+import { ImageUpload } from '@/components/shared/ImageUpload'
 
 interface EventInfo {
   id: string
@@ -317,21 +318,19 @@ export default function NominatePage() {
                 />
               </div>
 
-              {/* Photo URL */}
+              {/* Photo */}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5">
-                  Photo URL
+                  Photo
                 </label>
-                <Input
-                  name="photoUrl"
-                  value={form.photoUrl}
-                  onChange={handleChange}
-                  placeholder="https://example.com/photo.jpg"
-                  className="rounded-lg"
+                <ImageUpload
+                  value={form.photoUrl || null}
+                  onChange={(url) => setForm((prev) => ({ ...prev, photoUrl: url || '' }))}
+                  folder="nominees"
+                  label="Upload nominee photo"
+                  hint="PNG, JPG, JPEG or WEBP. Max 5MB."
+                  uploadEndpoint="/public/events/upload/image"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Paste a link to the nominee&apos;s photo (optional)
-                </p>
               </div>
 
               {/* Contact Info (optional) */}

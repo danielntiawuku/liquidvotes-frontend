@@ -11,6 +11,7 @@ interface ImageUploadProps {
   label?: string
   hint?: string
   aspectRatio?: 'square' | 'video'
+  uploadEndpoint?: string
 }
 
 export function ImageUpload({
@@ -20,6 +21,7 @@ export function ImageUpload({
   label = 'Upload image',
   hint = 'PNG, JPG, JPEG or WEBP. Max 5MB.',
   aspectRatio = 'square',
+  uploadEndpoint = '/upload/image',
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
@@ -37,7 +39,7 @@ export function ImageUpload({
       formData.append('file', file)
       formData.append('folder', folder)
 
-      const response = await api.post('/upload/image', formData, {
+      const response = await api.post(uploadEndpoint, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
 
