@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { nomineesApi } from '@/lib/api'
+import { nomineesApi, categoriesApi } from '@/lib/api'
 import { useWarmUp } from '@/lib/hooks'
 import { ImageUpload } from '@/components/shared/ImageUpload'
 import { Save, ArrowLeft, Loader2, CheckCircle, User } from 'lucide-react'
@@ -47,10 +47,13 @@ export default function EditNomineePage() {
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
 
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([])
+
   const [form, setForm] = useState({
     name: '',
     bio: '',
     photoUrl: '',
+    categoryId: '',
   })
 
   useWarmUp()
@@ -65,7 +68,18 @@ export default function EditNomineePage() {
           name: n.name || '',
           bio: n.bio || '',
           photoUrl: n.photoUrl || '',
+          categoryId: n.category?.id || '',
         })
+
+        // Load the event's categories for the "Change category" dropdown
+        if (n.category?.event?.id) {
+          try {
+            const catResponse = await categoriesApi.getByEvent(n.category.event.id)
+            setCategories(catResponse.data.categories || [])
+          } catch {
+            // Categories are optional — the form still works without the dropdown
+          }
+        }
       } catch {
         setError('Failed to load nominee details.')
       } finally {
@@ -76,7 +90,7 @@ export default function EditNomineePage() {
     fetchNominee()
   }, [nomineeId])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
     setSaved(false)
@@ -90,6 +104,7 @@ export default function EditNomineePage() {
         name: form.name,
         bio: form.bio || null,
         photoUrl: form.photoUrl || null,
+        categoryId: form.categoryId || undefined,
       })
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
@@ -204,7 +219,7 @@ export default function EditNomineePage() {
               Nominee Details
             </CardTitle>
             <CardDescription>
-              Update the nominee&apos;s name and description
+              Update the nominee&apos;s name, description and category
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -218,6 +233,32 @@ export default function EditNomineePage() {
                 onChange={handleChange}
                 placeholder="Nominee name"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Category
+              </label>
+              <select
+                name="categoryId"
+                value={form.categoryId}
+                onChange={handleChange}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {categories.length === 0 ? (
+                  <option value="">No categories available</option>
+                ) : (
+                  categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))
+                )}
+              </select>
+              <p className="text-xs text-muted-foreground mt-1">
+                Move this nominee to another category within{' '}
+                <span className="font-medium text-foreground">{nominee.category.event.name}</span>.
+                Existing votes and the nominee code are kept.
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">
